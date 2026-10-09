@@ -1,9 +1,9 @@
 const CONFIG = {
   SIGN_WORD: 'situation',
   SIGNS: [
-    { id: 'situation_1', label: '', image: 'signs/situation-1.jpg?v=4', zoom: 1.3, aspect: 'pertinent',  question: "Selon vous, quelles sont les parties les plus utiles de ce panneau ?" },
-    { id: 'situation_2', label: '', image: 'signs/situation-2.jpg?v=4', zoom: 6, aspect: 'inutile',    question: "Selon vous, quelles sont les parties les moins utiles ?" },
-    { id: 'situation_3', label: '', image: 'signs/situation-3.jpg?v=4', aspect: 'peu lisible', question: "Selon vous, qu'est-ce qui est peu compréhensible ou peu lisible ?" }
+    { id: 'situation_1', label: '', image: 'signs/situation-1.jpg?v=5', zoom: 1.3, aspect: 'pertinent',  question: "Selon vous, quelles sont les parties les plus utiles de ce panneau ?" },
+    { id: 'situation_2', label: '', image: 'signs/situation-2.jpg?v=5', zoom: 6, lens: 340, aspect: 'inutile',    question: "Selon vous, quelles sont les parties les moins utiles ?" },
+    { id: 'situation_3', label: '', image: 'signs/situation-3.jpg?v=5', aspect: 'peu lisible', question: "Selon vous, qu'est-ce qui est peu compréhensible ou peu lisible ?" }
   ],
   MAX_CLICKS: 3,
   ZOOM: 2.5
@@ -268,8 +268,10 @@ function moveLens (e) {
   const view = $('signLensView');
   const k = rect.width / ph.offsetWidth;
   const x = (e.clientX - rect.left) / k, y = (e.clientY - rect.top) / k;
+  const sign = state.signOrder[state.currentSignIndex];
+  lens.style.width = lens.style.height = (sign.lens || 220) + 'px';
   const r = lens.offsetWidth / 2;
-  const zoom = state.signOrder[state.currentSignIndex].zoom || CONFIG.ZOOM;
+  const zoom = sign.zoom || CONFIG.ZOOM;
   view.style.width  = ph.offsetWidth  * zoom + 'px';
   view.style.height = ph.offsetHeight * zoom + 'px';
   view.style.left   = r - x * zoom + 'px';
