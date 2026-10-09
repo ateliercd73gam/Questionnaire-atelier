@@ -1,9 +1,9 @@
 const CONFIG = {
   SIGN_WORD: 'situation',
   SIGNS: [
-    { id: 'situation_1', label: '', image: 'signs/situation-1.jpg', aspect: 'pertinent',  question: "Selon vous, quelles sont les parties les plus utiles de ce panneau ?" },
-    { id: 'situation_2', label: '', image: 'signs/situation-2.jpg', aspect: 'inutile',    question: "Selon vous, quelles sont les parties les moins utiles ?" },
-    { id: 'situation_3', label: '', image: 'signs/situation-3.jpg', aspect: 'peu lisible', question: "Selon vous, qu'est-ce qui est peu compréhensible ou peu lisible ?" }
+    { id: 'situation_1', label: '', image: 'signs/situation-1.jpg?v=2', aspect: 'pertinent',  question: "Selon vous, quelles sont les parties les plus utiles de ce panneau ?" },
+    { id: 'situation_2', label: '', image: 'signs/situation-2.jpg?v=2', aspect: 'inutile',    question: "Selon vous, quelles sont les parties les moins utiles ?" },
+    { id: 'situation_3', label: '', image: 'signs/situation-3.jpg?v=2', aspect: 'peu lisible', question: "Selon vous, qu'est-ce qui est peu compréhensible ou peu lisible ?" }
   ],
   MAX_CLICKS: 3,
   ZOOM: 2.5
