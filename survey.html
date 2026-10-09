@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Questionnaire sur la pertinence de la signalétique</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="fixed">
+
+  <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+  <button class="back" id="headerBack" onclick="prevStep()">← retour</button>
+
+  <main class="stage" id="stage">
+    <div class="slides">
+
+      <section class="slide" id="q1" data-key="pratiquant" data-type="single" data-auto>
+        <h2 class="q-title">Vous arrive-t-il de pratiquer une activité de pleine nature&nbsp;?</h2>
+        <div class="opts cols-2 big">
+          <button class="opt" data-value="oui">Oui</button>
+          <button class="opt" data-value="non">Non</button>
+        </div>
+      </section>
+
+      <section class="slide" id="q2" data-key="activites" data-type="multi">
+        <h2 class="q-title">Quelles activités pratiquez-vous&nbsp;?</h2>
+        <div class="opts multi">
+          <button class="opt" data-value="rando"><span>Randonnée et trail</span></button>
+          <button class="opt" data-value="vtt"><span>VTT et VTTAE</span></button>
+          <button class="opt" data-value="aerien"><span>Activité(s) aérienne</span></button>
+          <button class="opt" data-value="corde"><span>Activité(s) sur corde</span></button>
+          <button class="opt" data-value="nordique"><span>Activité(s) nordique</span></button>
+          <button class="opt" data-value="aquatique"><span>Activité(s) nautique</span></button>
+          <button class="opt" data-value="peche"><span>Pêche</span></button>
+          <button class="opt" data-value="autre"><span>Autre</span></button>
+        </div>
+        <p class="err">Sélectionnez au moins une activité.</p>
+        <button class="btn btn-primary btn-full btn-next" onclick="nextStep()">suivant →</button>
+      </section>
+
+      <section class="slide" id="q3" data-key="frequence" data-type="single" data-auto>
+        <h2 class="q-title">À quelle fréquence pratiquez-vous&nbsp;?</h2>
+        <div class="opts">
+          <button class="opt" data-value="annee">Quelques fois par an</button>
+          <button class="opt" data-value="mois">Une à deux fois par mois</button>
+          <button class="opt" data-value="semaine">Chaque semaine</button>
+          <button class="opt" data-value="plusieurs_semaine">Plusieurs fois par semaine</button>
+          <button class="opt" data-value="saison">En fonction de la saison</button>
+        </div>
+      </section>
+
+      <section class="slide" id="q4" data-key="destinations" data-type="multi">
+        <h2 class="q-title">Comment choisissez-vous vos lieux de sortie&nbsp;?</h2>
+        <div class="opts multi">
+          <button class="opt" data-value="internet"><span>Internet et réseaux sociaux</span></button>
+          <button class="opt" data-value="appli"><span>Applications de sentiers</span></button>
+          <button class="opt" data-value="tourisme"><span>Offices de tourisme</span></button>
+          <button class="opt" data-value="papier"><span>Cartes et guides papier</span></button>
+          <button class="opt" data-value="proches"><span>Recommandations de proches</span></button>
+          <button class="opt" data-value="spontane"><span>Spontanément, sur place</span></button>
+        </div>
+        <p class="err">Sélectionnez au moins une option.</p>
+        <button class="btn btn-primary btn-full btn-next" onclick="nextStep()">suivant →</button>
+      </section>
+
+      <section class="slide" id="q5" data-key="preparation_rando" data-type="single" data-auto>
+        <h2 class="q-title">Comment préparez-vous le plus souvent vos randonnées&nbsp;?</h2>
+        <div class="opts">
+          <button class="opt" data-value="avance"><span>Avant de partir</span></button>
+          <button class="opt" data-value="place"><span>Sur place</span></button>
+          <button class="opt" data-value="chemin"><span>En chemin</span></button>
+          <button class="opt" data-value="aucune"><span>Je ne prépare pas</span></button>
+        </div>
+      </section>
+
+      <section class="slide" id="q6" data-key="hors_sentier" data-type="single" data-auto>
+        <h2 class="q-title">Vous arrive-t-il de quitter les sentiers balisés&nbsp;?</h2>
+        <div class="opts">
+          <button class="opt" data-value="jamais">Jamais</button>
+          <button class="opt" data-value="parfois">Parfois</button>
+          <button class="opt" data-value="souvent">Souvent</button>
+        </div>
+      </section>
+
+      <section class="slide" id="q7" data-key="attention_signaletique" data-type="multi">
+        <h2 class="q-title">Face à un panneau d'information, que faites-vous&nbsp;?</h2>
+        <div class="opts multi">
+          <button class="opt" data-value="lis_tout" data-exclusive><span>Je lis tout</span></button>
+          <button class="opt" data-value="partiellement"><span>Je survole</span></button>
+          <button class="opt" data-value="carte"><span>Je regarde surtout la carte</span></button>
+          <button class="opt" data-value="reglement"><span>Je cherche les règles et interdictions</span></button>
+          <button class="opt" data-value="sensibilisation"><span>Je lis surtout les messages de sensibilisation</span></button>
+          <button class="opt" data-value="ne_lis_pas" data-exclusive><span>Je ne m'arrête pas aux panneaux</span></button>
+        </div>
+        <p class="err">Sélectionnez au moins une option.</p>
+        <button class="btn btn-primary btn-full btn-next" onclick="nextStep()">suivant →</button>
+      </section>
+
+      <section class="slide" id="q8" data-key="raisons_non_lecture" data-type="multi">
+        <h2 class="q-title">Qu'est-ce qui vous empêche de tout lire&nbsp;?</h2>
+        <div class="opts multi">
+          <button class="opt" data-value="trop_infos"><span>Trop d'informations</span></button>
+          <button class="opt" data-value="textes"><span>Textes trop petits ou trop longs</span></button>
+          <button class="opt" data-value="emplacement"><span>Panneaux mal placés ou peu visibles</span></button>
+          <button class="opt" data-value="connais"><span>Je connais déjà le site</span></button>
+          <button class="opt" data-value="gps"><span>Je me repère avec mon téléphone ou mon GPS</span></button>
+          <button class="opt" data-value="desinteret"><span>Pas d'intérêt</span></button>
+        </div>
+        <p class="err">Sélectionnez au moins une raison.</p>
+        <button class="btn btn-primary btn-full btn-next" onclick="nextStep()">suivant →</button>
+      </section>
+
+      <section class="slide" id="signs">
+        <h2 class="q-title" id="signTitle">Placez 3 points</h2>
+        <div class="sign-meta"><span id="signLabel">situation</span><span id="signProg">1 / 3</span></div>
+        <div class="sign-wrapper" id="signWrapper">
+          <div id="signPlaceholder" class="sign-placeholder"></div>
+          <div class="sign-click-overlay" id="signOverlay"></div>
+          <div class="sign-lens" id="signLens"><div class="sign-lens-view" id="signLensView"></div></div>
+        </div>
+        <div class="sign-bar">
+          <div class="dot-pips"><div class="pip"></div><div class="pip"></div><div class="pip"></div></div>
+          <button class="reset-link" onclick="resetSign()">effacer</button>
+        </div>
+        <button class="btn btn-primary btn-full btn-next" id="signNavBtn" onclick="nextSign()" disabled>suivant →</button>
+      </section>
+
+      <section class="slide" id="q_visite" data-key="type_visite" data-type="multi">
+        <h2 class="q-title">Avec qui sortez-vous en général en pleine nature&nbsp;?</h2>
+        <div class="opts multi">
+          <button class="opt" data-value="seul"><span>Seul(e)</span></button>
+          <button class="opt" data-value="couple"><span>En couple</span></button>
+          <button class="opt" data-value="famille"><span>En famille</span></button>
+          <button class="opt" data-value="amis"><span>Entre amis</span></button>
+          <button class="opt" data-value="groupe"><span>En groupe organisé</span></button>
+        </div>
+        <p class="err">Sélectionnez au moins une option.</p>
+        <button class="btn btn-primary btn-full btn-next" onclick="nextStep()">suivant →</button>
+      </section>
+
+      <section class="slide" id="q_age" data-key="age" data-type="single" data-auto>
+        <h2 class="q-title">Quel est votre âge&nbsp;?</h2>
+        <div class="opts cols-2">
+          <button class="opt" data-value="moins_18">Moins de 18 ans</button>
+          <button class="opt" data-value="18_25">18 – 25 ans</button>
+          <button class="opt" data-value="26_35">26 – 35 ans</button>
+          <button class="opt" data-value="36_45">36 – 45 ans</button>
+          <button class="opt" data-value="46_55">46 – 55 ans</button>
+          <button class="opt" data-value="56_65">56 – 65 ans</button>
+          <button class="opt" data-value="plus_65">Plus de 65 ans</button>
+        </div>
+      </section>
+
+      <section class="slide" id="q_csp" data-key="csp" data-type="single" data-auto>
+        <h2 class="q-title">Quelle est votre situation professionnelle&nbsp;?</h2>
+        <div class="opts">
+          <button class="opt" data-value="agriculteur">Agriculteur exploitant</button>
+          <button class="opt" data-value="artisan">Artisan, commerçant, chef d'entreprise</button>
+          <button class="opt" data-value="cadre">Cadre, profession intellectuelle supérieure</button>
+          <button class="opt" data-value="intermediaire">Profession intermédiaire</button>
+          <button class="opt" data-value="employe">Employé(e)</button>
+          <button class="opt" data-value="ouvrier">Ouvrier(ère)</button>
+          <button class="opt" data-value="retraite">Retraité(e)</button>
+          <button class="opt" data-value="etudiant">Étudiant(e)</button>
+          <button class="opt" data-value="sans_activite">Sans activité professionnelle</button>
+        </div>
+      </section>
+
+      <section class="slide" id="q_genre" data-key="genre" data-type="single">
+        <h2 class="q-title">Vous êtes…</h2>
+        <div class="opts">
+          <button class="opt" data-value="homme">Un homme</button>
+          <button class="opt" data-value="femme">Une femme</button>
+          <button class="opt" data-value="autre">Autre</button>
+          <button class="opt" data-value="nr">Je préfère ne pas répondre</button>
+        </div>
+        <p class="err">Sélectionnez une option.</p>
+        <button class="btn btn-primary btn-full btn-next" onclick="submitSurvey()">terminer →</button>
+      </section>
+
+      <section class="slide thanks" id="merci" style="text-align:center;">
+        <h2>Merci pour votre participation</h2>
+        <p>Vos réponses ont bien été enregistrées</p>
+        <a href="index.html">nouvelle participation</a>
+      </section>
+
+    </div>
+  </main>
+
+  <script src="js/auth.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+mountResultsAccess();
+  </script>
+</body>
+</html>

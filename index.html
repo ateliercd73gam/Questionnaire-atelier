@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Questionnaire sur la pertinence de la signalétique</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="fixed">
+
+  <main class="center-page home">
+    <div class="home-inner">
+
+      <div class="logos">
+        <img style="--ar:2.66" src="assets/logos/logo-usmb.jpg" alt="Université Savoie Mont Blanc">
+        <img style="--ar:2.59" src="assets/logos/logo-geo.jpg" alt="Département Géographie et Aménagement">
+        <img style="--ar:1.82" src="assets/logos/logo-gam.png" alt="Master Géographie et Aménagement de la Montagne">
+      </div>
+
+      <h1>Ce questionnaire nous permet de recueillir les données qui appuieront notre analyse de la pertinence de la signalétique en entrée des sites d'activités de pleine nature.</h1>
+
+      <a href="survey.html" class="btn btn-primary btn-full">participer →</a>
+      <p class="consent"><button type="button" class="link" id="legalOpen">mentions légales et éthiques</button></p>
+
+      <div class="credits">
+        <p class="names">Romain Mietton · Pierre Maraux · Kilian Jot Nouvel</p>
+        <p>Groupe d'atelier d'aménagement – Conseil Départemental de la Savoie</p>
+        <p>Master 2 Géographie et Aménagement de la Montagne<br>Promotion Beaufort-Arêches 2026-2027<br>Université Savoie Mont-Blanc</p>
+      </div>
+
+    </div>
+  </main>
+
+  <div class="modal" id="legalModal" hidden>
+    <div class="modal-box legal" role="dialog" aria-modal="true" aria-labelledby="legalTitle">
+      <h3 id="legalTitle">Mentions légales et éthiques</h3>
+
+      <h4>Cadre de l'enquête</h4>
+      <p>Ce questionnaire est réalisé par un groupe d'atelier d'aménagement du Master 2 Géographie et Aménagement de la Montagne (Université Savoie Mont-Blanc), pour le Conseil Départemental de la Savoie. Il porte sur la pertinence de la signalétique en entrée des sites d'activités de pleine nature.</p>
+
+      <h4>Participation volontaire et sans engagement</h4>
+      <p>Votre participation est libre et ne vous engage à rien. Vous pouvez la quitter à tout moment en fermant la page : seul un questionnaire terminé est enregistré.</p>
+
+      <h4>Anonymat</h4>
+      <p>Les réponses sont anonymes. Le questionnaire ne demande ni nom, ni adresse e-mail, ni numéro de téléphone, et n'enregistre pas votre adresse IP. Les informations de profil (tranche d'âge, situation professionnelle, genre, façon de sortir) servent uniquement à décrire l'ensemble des participants et ne permettent pas de vous identifier.</p>
+      <p>Nous enregistrons aussi vos réponses aux questions, l'endroit où vous cliquez sur les images, la durée de réponse et un identifiant aléatoire qui distingue les questionnaires entre eux, sans aucun lien avec votre identité.</p>
+
+      <h4>Utilisation des réponses</h4>
+      <p>Les données servent uniquement à l'analyse menée dans le cadre de cet atelier et à sa restitution au Conseil Départemental de la Savoie, sous forme de résultats d'ensemble (statistiques, cartes de chaleur). Elles ne sont ni vendues ni transmises à des tiers à des fins commerciales.</p>
+
+      <h4>Conservation</h4>
+      <p>Les réponses ne sont pas conservées au-delà du 1er mars 2027 : elles sont supprimées au plus tard à cette date.</p>
+
+      <h4>Hébergement et sécurité</h4>
+      <p>Les réponses sont stockées dans un tableur Google (Google Sheets) géré par l'équipe de l'atelier, dont l'accès est protégé par mot de passe. Le site n'utilise ni cookie de suivi ni outil de mesure d'audience.</p>
+
+      <h4>Vos droits</h4>
+      <p>Les réponses étant anonymes, il n'est pas possible de retrouver celles d'une personne en particulier pour les consulter ou les supprimer. En cas de doute, ne validez pas le questionnaire : rien n'est enregistré avant la dernière question.</p>
+
+      <div class="modal-actions"><button class="btn btn-primary" data-close>fermer</button></div>
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/db.js"></script>
+  <script>
+mountResultsAccess();
+  </script>
+  <script>
+    const legalModal = document.getElementById('legalModal');
+    const legalBox = legalModal.querySelector('.modal-box');
+    const closeLegal = () => { legalModal.hidden = true; };
+    document.getElementById('legalOpen').addEventListener('click', () => { legalModal.hidden = false; legalBox.scrollTop = 0; });
+    legalModal.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeLegal));
+    legalModal.addEventListener('click', e => { if (e.target === legalModal) closeLegal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLegal(); });
+  </script>
+</body>
+</html>
