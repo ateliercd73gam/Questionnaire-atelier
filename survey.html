@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Questionnaire sur la pertinence de la signalétique</title>
-  <link rel="stylesheet" href="css/style.css?v=5">
+  <link rel="stylesheet" href="css/style.css?v=10">
 </head>
 <body class="fixed">
 
@@ -34,7 +34,6 @@
           <button class="opt" data-value="peche"><span>Pêche</span></button>
           <button class="opt" data-value="autre"><span>Autre</span></button>
         </div>
-        <p class="err">Sélectionnez au moins une activité.</p>
         <button class="btn btn-primary btn-full btn-next" onclick="nextStep()">suivant →</button>
       </section>
 
@@ -59,7 +58,6 @@
           <button class="opt" data-value="proches"><span>Recommandations de proches</span></button>
           <button class="opt" data-value="spontane"><span>Spontanément, sur place</span></button>
         </div>
-        <p class="err">Sélectionnez au moins une option.</p>
         <button class="btn btn-primary btn-full btn-next" onclick="nextStep()">suivant →</button>
       </section>
 
@@ -92,7 +90,6 @@
           <button class="opt" data-value="sensibilisation"><span>Je lis surtout les messages de sensibilisation</span></button>
           <button class="opt" data-value="ne_lis_pas" data-exclusive><span>Je ne m'arrête pas aux panneaux</span></button>
         </div>
-        <p class="err">Sélectionnez au moins une option.</p>
         <button class="btn btn-primary btn-full btn-next" onclick="nextStep()">suivant →</button>
       </section>
 
@@ -106,23 +103,31 @@
           <button class="opt" data-value="gps"><span>Je me repère avec mon téléphone ou mon GPS</span></button>
           <button class="opt" data-value="desinteret"><span>Pas d'intérêt</span></button>
         </div>
-        <p class="err">Sélectionnez au moins une raison.</p>
         <button class="btn btn-primary btn-full btn-next" onclick="nextStep()">suivant →</button>
       </section>
 
       <section class="slide" id="signs">
-        <h2 class="q-title" id="signTitle">Placez 3 points</h2>
-        <div class="sign-meta"><span id="signLabel">situation</span><span id="signProg">1 / 3</span></div>
+        <h2 class="q-title" id="signTitle"></h2>
+        <div class="sign-meta"><span id="signLabel">situation</span><span id="signProg">1 / 2</span></div>
         <div class="sign-wrapper" id="signWrapper">
           <div id="signPlaceholder" class="sign-placeholder"></div>
           <div class="sign-click-overlay" id="signOverlay"></div>
           <div class="sign-lens" id="signLens"><div class="sign-lens-view" id="signLensView"></div></div>
+          <div class="sign-brief" id="signBrief">
+            <p class="sign-brief-text" id="signBriefText"></p>
+          </div>
         </div>
         <div class="sign-bar">
           <div class="dot-pips"><div class="pip"></div><div class="pip"></div><div class="pip"></div></div>
           <button class="reset-link" onclick="resetSign()">effacer</button>
         </div>
-        <button class="btn btn-primary btn-full btn-next" id="signNavBtn" onclick="nextSign()" disabled>suivant →</button>
+        <button class="btn btn-primary btn-full btn-next" id="signNavBtn" onclick="nextSign()" disabled>Placez 3 points</button>
+      </section>
+
+      <section class="slide" id="q_accueil" data-key="accueil" data-type="single">
+        <h2 class="q-title">Selon vous, quelle installation d'accueil est la plus efficace&nbsp;?</h2>
+        <div class="picks" id="accueilPicks"></div>
+        <button class="btn btn-primary btn-full btn-next" onclick="nextStep()">suivant →</button>
       </section>
 
       <section class="slide" id="q_visite" data-key="type_visite" data-type="multi">
@@ -134,7 +139,6 @@
           <button class="opt" data-value="amis"><span>Entre amis</span></button>
           <button class="opt" data-value="groupe"><span>En groupe organisé</span></button>
         </div>
-        <p class="err">Sélectionnez au moins une option.</p>
         <button class="btn btn-primary btn-full btn-next" onclick="nextStep()">suivant →</button>
       </section>
 
@@ -189,7 +193,7 @@
 
   <script src="js/auth.js?v=5"></script>
   <script src="js/db.js?v=5"></script>
-  <script src="js/app.js?v=5"></script>
+  <script src="js/app.js?v=15"></script>
   <script>
 mountResultsAccess();
   </script>

@@ -64,6 +64,23 @@ function renderBarChart (data) {
   container.innerHTML = rows;
 }
 
+function renderAccueilChart (data) {
+  const container = document.getElementById('accueilChart');
+  if (!container) return;
+  const answered = data.filter(r => r.accueil);
+  if (!answered.length) { container.innerHTML = '<p class="empty">Aucune donnée disponible.</p>'; return; }
+  const total = answered.length;
+  container.innerHTML = CONFIG.ACCUEIL.map(a => {
+    const n = answered.filter(r => r.accueil === a.id).length;
+    return `
+    <div class="bar-row">
+      <div class="bar-lbl">${a.label}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct(n, total)}%;"></div></div>
+      <div class="bar-val"><b>${pct(n, total)} %</b> <span>(${n} sur ${total})</span></div>
+    </div>`;
+  }).join('');
+}
+
 function renderHeatmaps (data) {
   const grid = document.getElementById('heatmapsGrid');
   if (!grid) return;
@@ -158,6 +175,7 @@ function render (docs) {
     .sort((a, b) => String(a.timestamp).localeCompare(String(b.timestamp)));
   renderStats(lastData);
   renderBarChart(lastData);
+  renderAccueilChart(lastData);
   renderHeatmaps(lastData);
 }
 

@@ -3,8 +3,7 @@ const SHEET_NAME = 'Tableau de réponses';
 
 const SITUATIONS = [
   { id: 'situation_1', label: 'Situation 1 · pertinent' },
-  { id: 'situation_2', label: 'Situation 2 · inutile' },
-  { id: 'situation_3', label: 'Situation 3 · peu lisible' }
+  { id: 'situation_2', label: 'Situation 2 · inutile' }
 ];
 
 const MAX_RECORD_CHARS = 20000;
@@ -30,6 +29,7 @@ const L = {
     cadre: 'Cadre, profession intellectuelle sup.', intermediaire: 'Profession intermédiaire', employe: 'Employé(e)',
     ouvrier: 'Ouvrier(ère)', retraite: 'Retraité(e)', etudiant: 'Étudiant(e)', sans_activite: 'Sans activité professionnelle' },
   genre: { homme: 'Homme', femme: 'Femme', autre: 'Autre', nr: 'Ne se prononce pas' },
+  accueil: { accueil_1: 'Installation 1', accueil_2: 'Installation 2', accueil_3: 'Installation 3', accueil_4: 'Installation 4' },
   visite: { seul: 'Seul(e)', couple: 'En couple', famille: 'En famille', amis: 'Entre amis', groupe: 'En groupe organisé' },
   signs: SITUATIONS.reduce((m, s) => { m[s.id] = s.label; return m; }, {})
 };
@@ -63,6 +63,7 @@ const COLS = [
   { h: 'Situation professionnelle', w: 230, v: r => lab_(L.csp, r.csp) },
   { h: 'Genre',                     w: 110, v: r => lab_(L.genre, r.genre) },
   { h: 'Sort le plus souvent',      w: 180, v: r => labs_(L.visite, r.type_visite) },
+  { h: 'Accueil le plus efficace',  w: 150, v: r => lab_(L.accueil, r.accueil) },
   { h: 'Ordre des situations',      w: 260, v: r => Array.isArray(r.sign_order) ? r.sign_order.map(id => lab_(L.signs, id)).join('  >  ') : '' }
 ].concat(SITUATIONS.map(sit => ({ h: 'Clics : ' + sit.label, w: 210, v: r => clicks_(r, sit.id) })));
 const N_VISIBLE = COLS.length;

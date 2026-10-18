@@ -1,9 +1,14 @@
 const CONFIG = {
   SIGN_WORD: 'situation',
   SIGNS: [
-    { id: 'situation_1', label: '', image: 'signs/situation-1.jpg?v=5', zoom: 1.3, aspect: 'pertinent',  question: "Selon vous, quelles sont les parties les plus utiles de ce panneau ?" },
-    { id: 'situation_2', label: '', image: 'signs/situation-2.jpg?v=5', zoom: 6, lens: 340, aspect: 'inutile',    question: "Selon vous, quelles sont les parties les moins utiles ?" },
-    { id: 'situation_3', label: '', image: 'signs/situation-3.jpg?v=5', aspect: 'peu lisible', question: "Selon vous, qu'est-ce qui est peu compréhensible ou peu lisible ?" }
+    { id: 'situation_1', label: '', image: 'signs/situation-1.jpg?v=5', zoom: 1.3, aspect: 'pertinent',  focus: 'les plus utiles',  question: "Selon vous, quelles sont les informations les plus utiles de ce panneau ?" },
+    { id: 'situation_2', label: '', image: 'signs/situation-2.jpg?v=7', zoom: 1.3, aspect: 'inutile',    focus: 'les moins utiles', question: "Selon vous, quelles sont les informations les moins utiles ?" }
+  ],
+  ACCUEIL: [
+    { id: 'accueil_1', label: 'Installation 1', image: 'accueil/accueil-1.jpg?v=1' },
+    { id: 'accueil_2', label: 'Installation 2', image: 'accueil/accueil-2.jpg?v=1' },
+    { id: 'accueil_3', label: 'Installation 3', image: 'accueil/accueil-3.jpg?v=1' },
+    { id: 'accueil_4', label: 'Installation 4', image: 'accueil/accueil-4.jpg?v=2' }
   ],
   MAX_CLICKS: 3,
   ZOOM: 2.5
@@ -27,10 +32,28 @@ function setTitle (el, text) {
     .replace(/\n/g, '<br>');
 }
 
+function highlight (el, focus) {
+  if (focus) el.innerHTML = el.innerHTML.replace(focus, `<span class="hl">${focus}</span>`);
+}
+
 function signMarkup (sign) {
   return sign.image
     ? `<img class="sign-surface" src="${sign.image}" alt="" draggable="false">`
     : '<div class="sign-surface sign-grid"></div>';
+}
+
+function accueilMarkup (a) {
+  return a.image
+    ? `<img src="${a.image}" alt="${a.label}" draggable="false">`
+    : '<div class="sign-grid"></div>';
+}
+
+function renderAccueil () {
+  const picks = $('accueilPicks');
+  if (!picks) return;
+  picks.innerHTML = CONFIG.ACCUEIL.map((a, i) =>
+    `<button class="opt pick" data-value="${a.id}">${accueilMarkup(a)}<span class="pick-num">${i + 1}</span></button>`
+  ).join('');
 }
 
 const state = {
@@ -53,13 +76,14 @@ const state = {
     raisons_non_lecture: [],
     sign_interactions: {},
     sign_order: [],
+    accueil: null,
     age: null, csp: null, genre: null, type_visite: []
   }
 };
 
 const ALL_STEPS = [
   'q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8',
-  'signs',
+  'signs', 'q_accueil',
   'q_visite', 'q_age', 'q_csp', 'q_genre',
   'merci'
 ];
@@ -122,7 +146,7 @@ function navigate (direction) {
     toEl.classList.add('active');
     toEl.style.animation = `${direction === 'forward' ? 'enterFwd' : 'enterBack'} ${DUR}ms ease forwards`;
     updateProgress(steps);
-    $('stage').classList.toggle('stage-signs', toId === 'signs');
+    $('stage').classList.toggle('stage-signs', toId === 'signs' || toId === 'q_accueil');
     $('stage').classList.toggle('stage-center', toId === 'merci');
     if (toId === 'signs') initSignSection(direction);
     fitSlide(toEl);
@@ -177,15 +201,24 @@ function onOptionClick (e) {
       arr.splice(i, 1);
     }
     slide.querySelectorAll('.opt').forEach(o => o.classList.toggle('sel', arr.includes(o.dataset.value)));
+    updateNextBtn(slide);
     return;
   }
 
   state.responses[key] = value;
   slide.querySelectorAll('.opt').forEach(o => o.classList.toggle('sel', o === opt));
+  updateNextBtn(slide);
   if ('auto' in slide.dataset) {
     clearTimeout(autoTimer);
     autoTimer = setTimeout(() => { if (slide.classList.contains('active')) nextStep(); }, 300);
   }
+}
+
+function updateNextBtn (slide) {
+  const btn = slide.querySelector('.btn-next');
+  if (!btn || !slide.dataset.key || state.saving) return;
+  const v = state.responses[slide.dataset.key];
+  btn.disabled = slide.dataset.type === 'multi' ? v.length === 0 : v == null;
 }
 
 function validateCurrent () {
@@ -219,12 +252,10 @@ function renderSign (index) {
   const sign = state.signOrder[index];
   const lbl    = $('signLabel');
   const prog   = $('signProg');
-  const navBtn = $('signNavBtn');
   const title = $('signTitle');
-  if (title)  setTitle(title, `${sign.question || ''}\nPlacez ${CONFIG.MAX_CLICKS} points`.trim());
+  if (title)  { setTitle(title, sign.question || ''); highlight(title, sign.focus); }
   if (lbl)    lbl.textContent    = sign.label || CONFIG.SIGN_WORD;
   if (prog)   prog.textContent   = `${index + 1} / ${state.signOrder.length}`;
-  if (navBtn) navBtn.textContent = index < state.signOrder.length - 1 ? 'suivant →' : 'continuer →';
   const ph = $('signPlaceholder');
   if (ph) ph.innerHTML = signMarkup(sign);
   $('signLensView').innerHTML = signMarkup(sign);
@@ -233,11 +264,34 @@ function renderSign (index) {
   state.currentSignClicks = [];
   state.signShownAt = Date.now();
   (state.signDrafts[sign.id] || []).forEach(c => { state.currentSignClicks.push(c); addDot(c); });
+  showBrief(sign);
   updateClickUI();
   fitSlide($('signs'));
 }
 
+function showBrief (sign) {
+  const brief = $('signBrief');
+  if (!brief) return;
+  clearTimeout(state.briefTimer);
+  const seen = state.signDrafts[sign.id];
+  brief.classList.toggle('on', !seen);
+  $('signs').classList.toggle('briefing', !seen);
+  if (seen) return;
+  const q = $('signBriefText');
+  setTitle(q, sign.question || '');
+  highlight(q, sign.focus);
+  state.briefTimer = setTimeout(closeBrief, 3000);
+}
+
+function closeBrief () {
+  if (!$('signs').classList.contains('active')) return;
+  $('signBrief').classList.remove('on');
+  $('signs').classList.remove('briefing');
+  saveSignDraft();
+}
+
 function handleSignClick (e) {
+  if ($('signBrief').classList.contains('on')) return;
   if (state.currentSignClicks.length >= CONFIG.MAX_CLICKS) return;
   const wrapper = $('signWrapper');
   const rect    = wrapper.getBoundingClientRect();
@@ -262,7 +316,7 @@ function addDot (click) {
 
 function moveLens (e) {
   const lens = $('signLens');
-  if (!lens || !document.querySelector('#signPlaceholder img') || e.pointerType !== 'mouse') { hideLens(); return; }
+  if (!lens || !document.querySelector('#signPlaceholder img') || e.pointerType !== 'mouse' || $('signBrief').classList.contains('on')) { hideLens(); return; }
   const ph   = $('signPlaceholder');
   const rect = ph.getBoundingClientRect();
   const view = $('signLensView');
@@ -311,7 +365,13 @@ function updateClickUI () {
   const n = state.currentSignClicks.length;
   document.querySelectorAll('.pip').forEach((p, i) => p.classList.toggle('on', i < n));
   const navBtn = $('signNavBtn');
-  if (navBtn) navBtn.disabled = n < CONFIG.MAX_CLICKS;
+  if (!navBtn) return;
+  const last = state.currentSignIndex >= state.signOrder.length - 1;
+  navBtn.disabled = n < CONFIG.MAX_CLICKS;
+  const left = CONFIG.MAX_CLICKS - n;
+  navBtn.textContent = n === 0 ? `Placez ${left} points`
+    : left > 0 ? `${left} point${left > 1 ? 's' : ''} restant${left > 1 ? 's' : ''}`
+    : (last ? 'continuer →' : 'suivant →');
 }
 
 function isCompleteResponse (r) {
@@ -379,6 +439,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const first = $(steps[0]);
   if (first) { first.classList.add('active'); first.style.animation = 'none'; fitSlide(first); }
   updateProgress(steps);
+  renderAccueil();
+  document.querySelectorAll('.slide[data-key]').forEach(updateNextBtn);
   document.addEventListener('click', onOptionClick);
   const wrapper = $('signWrapper');
   if (wrapper) {

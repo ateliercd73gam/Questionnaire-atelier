@@ -23,6 +23,11 @@ const XL = {
   visite: { seul: 'Seul(e)', couple: 'En couple', famille: 'En famille', amis: 'Entre amis', groupe: 'En groupe organisé' }
 };
 
+function xlAccueil (id) {
+  const a = CONFIG.ACCUEIL.find(x => x.id === id);
+  return a ? a.label : (id || '');
+}
+
 function xlLabel (map, v) {
   if (v === null || v === undefined || v === '') return '';
   return Object.prototype.hasOwnProperty.call(map, v) ? map[v] : String(v);
@@ -56,6 +61,7 @@ function xlColumns () {
     { h: 'Situation professionnelle', w: 34, v: r => xlLabel(XL.csp, r.csp) },
     { h: 'Genre',                     w: 16, v: r => xlLabel(XL.genre, r.genre) },
     { h: 'Sort le plus souvent',      w: 26, v: r => xlLabels(XL.visite, r.type_visite) },
+    { h: 'Accueil le plus efficace',  w: 22, v: r => xlAccueil(r.accueil) },
     { h: 'Ordre des situations',      w: 38, v: r => Array.isArray(r.sign_order) ? r.sign_order.map(xlSignName).join('  >  ') : '' }
   ].concat(
     CONFIG.SIGNS.map(sign => ({ h: 'Clics : ' + signTitle(sign), w: 32, v: r => xlClicks(r, sign.id) })),
