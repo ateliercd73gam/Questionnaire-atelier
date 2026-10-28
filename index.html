@@ -4,31 +4,40 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Questionnaire sur la pertinence de la signalétique</title>
-  <link rel="stylesheet" href="css/style.css?v=10">
+  <link rel="stylesheet" href="css/style.css?v=14">
 </head>
 <body class="fixed">
 
-  <main class="center-page home">
+  <svg class="hills" viewBox="0 110 1440 370" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+    <path class="hill-far"  d="M0 200 C180 140 360 150 520 185 C680 220 820 130 1000 150 C1180 170 1300 120 1440 140 V480 H0 Z"/>
+    <path class="hill-mid"  d="M0 290 C200 220 420 230 600 270 C700 292 760 268 800 262 C900 248 1060 210 1240 240 C1340 256 1400 250 1440 246 V480 H0 Z"/>
+    <g class="pines"><path d="M290 222 L279 252 H301 Z"/><path d="M318 228 L310 250 H326 Z"/><path d="M1110 206 L1099 236 H1121 Z"/><path d="M1138 218 L1130 240 H1146 Z"/><path d="M1168 206 L1159 232 H1177 Z"/><path d="M470 316 L458 350 H482 Z"/><path d="M1290 316 L1279 346 H1301 Z"/></g>
+    <path class="hill-near" d="M0 400 C220 330 440 340 640 372 C820 400 1040 330 1260 350 C1360 360 1420 352 1440 350 V480 H0 Z"/>
+    <clipPath id="belowCrest"><path d="M0 290 C200 220 420 230 600 270 C700 292 760 268 800 262 C900 248 1060 210 1240 240 C1340 256 1400 250 1440 246 V480 H0 Z"/></clipPath>
+    <path class="path" clip-path="url(#belowCrest)" d="M369 588.0 L370 587.3 L373 585.3 L377 581.9 L384 577.3 L392 571.5 L401 564.8 L412 557.1 L423 548.8 L436 539.8 L449 530.5 L462 520.8 L476 510.9 L490 500.9 L504 491.0 L517 481.1 L531 471.5 L544 462.0 L557 452.8 L569 443.9 L582 435.3 L593 427.1 L604 419.2 L615 411.7 L625 404.4 L635 397.6 L644 391.0 L652 384.8 L660 378.9 L668 373.3 L675 368.0 L682 363.0 L688 358.2 L694 353.6 L700 349.3 L705 345.3 L709 341.4 L713 337.7 L717 334.3 L720 331.0 L723 327.8 L726 324.8 L728 322.0 L730 319.3 L732 316.8 L733 314.3 L734 312.0 L734 309.8 L734 307.7 L734 305.7 L734 303.8 L733 302.0 L732 300.2 L731 298.6 L729 297.0 L728 295.5 L726 294.0 L724 292.6 L722 291.3 L719 290.0 L717 288.8 L714 287.6 L712 286.5 L709 285.4 L707 284.4 L704 283.4 L702 282.4 L699 281.5 L697 280.6 L695 279.8 L694 279.0 L692 278.2 L691 277.4 L690 276.7 L689 276.0 L688 275.3 L688 274.6 L689 274.0 L689 273.4 L690 272.8 L691 272.2 L693 271.7 L694 271.1 L696 270.6 L698 270.1 L701 269.6 L703 269.2 L706 268.7 L709 268.3 L712 267.8 L714 267.4 L744 267.4 L742 267.8 L740 268.3 L738 268.7 L736 269.2 L734 269.6 L733 270.1 L731 270.6 L730 271.1 L729 271.7 L728 272.2 L728 272.8 L728 273.4 L729 274.0 L729 274.6 L731 275.3 L732 276.0 L734 276.7 L736 277.4 L739 278.2 L741 279.0 L744 279.8 L748 280.6 L751 281.5 L755 282.4 L759 283.4 L763 284.4 L767 285.4 L771 286.5 L775 287.6 L780 288.8 L784 290.0 L788 291.3 L793 292.6 L797 294.0 L801 295.5 L805 297.0 L809 298.6 L813 300.2 L816 302.0 L820 303.8 L823 305.7 L827 307.7 L830 309.8 L833 312.0 L835 314.3 L838 316.8 L840 319.3 L843 322.0 L845 324.8 L847 327.8 L849 331.0 L850 334.3 L852 337.7 L853 341.4 L855 345.3 L856 349.3 L857 353.6 L858 358.2 L860 363.0 L861 368.0 L862 373.3 L863 378.9 L864 384.8 L865 391.0 L866 397.6 L867 404.4 L868 411.7 L869 419.2 L870 427.1 L871 435.3 L872 443.9 L873 452.8 L875 462.0 L876 471.5 L877 481.1 L879 491.0 L880 500.9 L882 510.9 L883 520.8 L885 530.5 L886 539.8 L888 548.8 L889 557.1 L890 564.8 L891 571.5 L892 577.3 L893 581.9 L893 585.3 L894 587.3 L894 588.0 Z"/>
+  </svg>
+
+  <main class="home">
     <div class="home-inner">
 
       <div class="logos">
-        <img style="--ar:2.66" src="assets/logos/logo-usmb.jpg" alt="Université Savoie Mont Blanc">
-        <img style="--ar:2.59" src="assets/logos/logo-geo.jpg" alt="Département Géographie et Aménagement">
-        <img style="--ar:1.82" src="assets/logos/logo-gam.png" alt="Master Géographie et Aménagement de la Montagne">
+        <img class="usmb" src="assets/logos/logo-usmb.jpg" alt="Université Savoie Mont Blanc">
+        <span class="logos-sep" aria-hidden="true"></span>
+        <img class="savoie" src="assets/logos/logo-savoie.png" alt="Savoie, le Département">
       </div>
 
-      <h1>Ce questionnaire nous permet de recueillir les données qui appuieront notre analyse de la pertinence de la signalétique en entrée des sites d'activités de pleine nature.</h1>
+      <h1>Merci de faire un bout de chemin avec nous&nbsp;!</h1>
+      <p class="intro"><span>Qu'attendez-vous en arrivant sur un site d'activités de pleine nature&nbsp;?</span> <span>Dites-nous ce qui vous aide et ce qui vous manque&nbsp;: on vous écoute.</span></p>
 
-      <a href="survey.html" class="btn btn-primary btn-full">participer →</a>
-      <p class="consent"><button type="button" class="link" id="legalOpen">mentions légales et éthiques</button></p>
-
-      <div class="credits">
-        <p class="names">Romain Mietton · Pierre Maraux · Kilian Jot Nouvel</p>
-        <p>Groupe d'atelier d'aménagement – Conseil Départemental de la Savoie</p>
-        <p>Master 2 Géographie et Aménagement de la Montagne<br>Promotion Beaufort-Arêches 2026-2027<br>Université Savoie Mont-Blanc</p>
+      <div class="signpost">
+        <span class="pole" aria-hidden="true"></span>
+        <a href="survey.html" class="start">
+          <span class="start-plate"><span class="start-label">Donner mon avis</span><span class="start-time">5&nbsp;min</span></span>
+        </a>
       </div>
 
     </div>
+    <footer class="home-foot"><button type="button" class="link" id="legalOpen">Mentions légales et éthiques</button></footer>
   </main>
 
   <div class="modal" id="legalModal" hidden>
@@ -36,17 +45,20 @@
       <h3 id="legalTitle">Mentions légales et éthiques</h3>
 
       <h4>Cadre de l'enquête</h4>
-      <p>Ce questionnaire est réalisé par un groupe d'atelier d'aménagement du Master 2 Géographie et Aménagement de la Montagne (Université Savoie Mont-Blanc), pour le Conseil Départemental de la Savoie. Il porte sur la pertinence de la signalétique en entrée des sites d'activités de pleine nature.</p>
+      <p>Ce questionnaire est réalisé par un groupe d'atelier d'aménagement du Master 2 Géographie et Aménagement de la Montagne (Université Savoie Mont Blanc), pour le Conseil départemental de la Savoie. Il porte sur la pertinence de la signalétique en entrée des sites d'activités de pleine nature.</p>
 
       <h4>Participation volontaire et sans engagement</h4>
       <p>Votre participation est libre et ne vous engage à rien. Vous pouvez la quitter à tout moment en fermant la page : seul un questionnaire terminé est enregistré.</p>
 
       <h4>Anonymat</h4>
-      <p>Les réponses sont anonymes. Le questionnaire ne demande ni nom, ni adresse e-mail, ni numéro de téléphone, et n'enregistre pas votre adresse IP. Les informations de profil (tranche d'âge, situation professionnelle, genre, façon de sortir) servent uniquement à décrire l'ensemble des participants et ne permettent pas de vous identifier.</p>
-      <p>Nous enregistrons aussi vos réponses aux questions, l'endroit où vous cliquez sur les images, la durée de réponse et un identifiant aléatoire qui distingue les questionnaires entre eux, sans aucun lien avec votre identité.</p>
+      <p>Les réponses sont anonymes. Le questionnaire ne demande ni nom ni numéro de téléphone, et n'enregistre pas votre adresse IP. Les informations de profil (tranche d'âge, situation professionnelle, département ou pays d'origine, genre, personnes avec qui vous sortez) servent uniquement à décrire l'ensemble des participants et ne permettent pas de vous identifier.</p>
+      <p>Nous enregistrons aussi vos réponses aux questions, y compris les réponses libres et votre avis sur l'enquête, les points que vous placez sur les photos de panneaux, vos notes des installations d'accueil, la durée de réponse et un identifiant aléatoire qui distingue les questionnaires entre eux, sans aucun lien avec votre identité. Merci de ne pas indiquer dans les réponses libres d'informations permettant de vous identifier.</p>
+
+      <h4>Adresse e-mail (facultative)</h4>
+      <p>À la fin du questionnaire, vous pouvez laisser votre adresse e-mail pour recevoir les résultats de l'enquête. C'est facultatif. Elle est enregistrée dans une liste séparée, sans lien avec vos réponses, et sert uniquement à vous envoyer les résultats. Elle n'est ni transmise ni réutilisée, et elle est supprimée une fois les résultats envoyés, au plus tard le 1er mars 2027.</p>
 
       <h4>Utilisation des réponses</h4>
-      <p>Les données servent uniquement à l'analyse menée dans le cadre de cet atelier et à sa restitution au Conseil Départemental de la Savoie, sous forme de résultats d'ensemble (statistiques, cartes de chaleur). Elles ne sont ni vendues ni transmises à des tiers à des fins commerciales.</p>
+      <p>Les données servent uniquement à l'analyse menée dans le cadre de cet atelier et à sa restitution au Conseil départemental de la Savoie, sous forme de résultats d'ensemble (statistiques, cartes de chaleur). Elles ne sont ni vendues ni transmises à des tiers à des fins commerciales.</p>
 
       <h4>Conservation</h4>
       <p>Les réponses ne sont pas conservées au-delà du 1er mars 2027 : elles sont supprimées au plus tard à cette date.</p>
@@ -55,16 +67,24 @@
       <p>Les réponses sont stockées dans un tableur Google (Google Sheets) géré par l'équipe de l'atelier, dont l'accès est protégé par mot de passe. Le site n'utilise ni cookie de suivi ni outil de mesure d'audience.</p>
 
       <h4>Vos droits</h4>
-      <p>Les réponses étant anonymes, il n'est pas possible de retrouver celles d'une personne en particulier pour les consulter ou les supprimer. En cas de doute, ne validez pas le questionnaire : rien n'est enregistré avant la dernière question.</p>
+      <p>Les réponses étant anonymes, il n'est pas possible de retrouver celles d'une personne en particulier pour les consulter ou les supprimer. En cas de doute, ne validez pas le questionnaire : rien n'est enregistré tant que vous n'avez pas cliqué sur «&nbsp;Envoyer mes réponses&nbsp;».</p>
+      <p>Si vous avez laissé votre adresse e-mail, vous pouvez demander à tout moment qu'elle soit supprimée en écrivant à <a href="mailto:atelier.cd73.gam@gmail.com">atelier.cd73.gam@gmail.com</a>.</p>
 
-      <div class="modal-actions"><button class="btn btn-primary" data-close>fermer</button></div>
+      <div class="legal-logos">
+        <img style="--ar:2.66" src="assets/logos/logo-usmb.jpg" alt="Université Savoie Mont Blanc">
+        <img style="--ar:2.59" src="assets/logos/logo-geo.jpg" alt="Département Géographie et Aménagement">
+        <img style="--ar:1.82" src="assets/logos/logo-gam.png" alt="Master Géographie et Aménagement de la Montagne">
+        <img style="--ar:1.15" src="assets/logos/logo-savoie.png" alt="Savoie, le Département">
+      </div>
+
+      <div class="modal-actions"><button class="btn" data-close>Retour</button></div>
     </div>
   </div>
 
-  <script src="js/auth.js?v=5"></script>
-  <script src="js/db.js?v=5"></script>
+  <script src="js/auth.js?v=6"></script>
+  <script src="js/db.js?v=7"></script>
   <script>
-mountResultsAccess();
+mountResultsAccess({ tree: true });
   </script>
   <script>
     const legalModal = document.getElementById('legalModal');
@@ -74,6 +94,17 @@ mountResultsAccess();
     legalModal.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeLegal));
     legalModal.addEventListener('click', e => { if (e.target === legalModal) closeLegal(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLegal(); });
+
+    const pole = document.querySelector('.pole');
+    const hills = document.querySelector('.hills');
+    function plantPole () {
+      const top = pole.parentElement.getBoundingClientRect().top + pole.offsetTop;
+      const ground = window.innerHeight - hills.getBoundingClientRect().height * 0.34;
+      pole.style.height = Math.max(36, Math.round(ground - top)) + 'px';
+    }
+    plantPole();
+    window.addEventListener('resize', plantPole);
+    document.fonts && document.fonts.ready.then(plantPole);
   </script>
 </body>
 </html>

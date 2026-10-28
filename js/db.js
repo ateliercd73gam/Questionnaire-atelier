@@ -6,6 +6,7 @@ const POLL_LOCAL_MS  = 1000;
 const FETCH_TIMEOUT  = 25000;
 const LOCAL_KEY = 'atelier_results';
 const PW_KEY    = 'atelier_pw';
+const IMAGES_KEY = 'atelier_images';
 
 const DB = (() => {
   const useSheet = !!SCRIPT_URL;
@@ -35,11 +36,19 @@ const DB = (() => {
   }
 
   const readLocal = () => JSON.parse(localStorage.getItem(LOCAL_KEY) || '[]');
+  const readImages = () => { try { return JSON.parse(localStorage.getItem(IMAGES_KEY) || '{}'); } catch (e) { return {}; } };
+  const writeImages = images => {
+    try { localStorage.setItem(IMAGES_KEY, JSON.stringify(images)); }
+    catch (e) { throw new Error('Mémoire du navigateur pleine'); }
+  };
 
   const backend = useSheet ? {
-    save:      record => call('submit', { record }),
+    save:      (record, contact) => call('submit', { record, contact: contact || '' }),
     list:      async () => (await call('list')).records,
     deleteAll: () => call('deleteAll'),
+    images:     async () => (await call('images')).images || {},
+    setImage:   (slot, data) => call('setImage', { slot, data }),
+    resetImage: slot => call('resetImage', { slot }),
     verify: async password => {
       try { await call('check', { password }); return true; }
       catch (e) { if (e.code === 'unauthorized') return false; throw e; }
@@ -52,6 +61,9 @@ const DB = (() => {
     },
     list:      async () => readLocal(),
     deleteAll: async () => localStorage.removeItem(LOCAL_KEY),
+    images:     async () => readImages(),
+    setImage:   async (slot, data) => { const all = readImages(); all[slot] = { v: 't' + Date.now(), data }; writeImages(all); },
+    resetImage: async slot => { const all = readImages(); delete all[slot]; writeImages(all); },
     verify:    async password => sha256Hex(password) === AUTH.HASH
   };
 
@@ -104,9 +116,12 @@ const DB = (() => {
     mode: useSheet ? 'sheet' : 'local',
     signedHint: () => !!store.get(),
     init: async () => {},
-    save: async record => { await backend.save(record); refreshAll(); },
+    save: async (record, contact) => { await backend.save(record, contact); refreshAll(); },
     deleteAll: async () => { await backend.deleteAll(); refreshAll(); },
     refresh: () => refreshAll(),
+    images: () => backend.images(),
+    setImage: (slot, data) => backend.setImage(slot, data),
+    resetImage: slot => backend.resetImage(slot),
     signIn: async password => {
       const ok = await backend.verify(password);
       if (ok) { store.set(password); notifyAuth(); }

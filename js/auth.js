@@ -1,5 +1,5 @@
 const AUTH = {
-  HASH: '271a5ef3c8d25428fabd651526abb6af97790148c845f613958b4a2711ea8997',
+  HASH: '25ae51e553c2d96fd051b301895b0897b60567141becf3888e938ddf1e705269',
   KEY:  'atelier_auth'
 };
 
@@ -65,11 +65,13 @@ function bindGateForm (form, onSuccess) {
   });
 }
 
-function mountResultsAccess () {
+const TREE_SVG = '<svg viewBox="0 0 22 30" aria-hidden="true"><path d="M11 0 L0 30 H22 Z"/></svg>';
+
+function mountResultsAccess (opts = {}) {
   const box = document.createElement('div');
-  box.className = 'res-access';
+  box.className = opts.tree ? 'res-access res-tree' : 'res-access';
   box.innerHTML = `
-    <button type="button" class="res-btn">backstage</button>
+    <button type="button" class="res-btn" aria-label="Accès réservé">${opts.tree ? TREE_SVG : 'backstage'}</button>
     <form class="gate-form" autocomplete="off">
       <input type="text" placeholder="mot de passe" aria-label="Mot de passe" autocomplete="off" autocapitalize="off" spellcheck="false">
       <button type="submit" aria-label="Valider">→</button>
