@@ -30,7 +30,7 @@ const XL = {
   csp: { agriculteur: 'Agriculteur(rice) exploitant(e)', artisan: "Artisan(e), commerçant(e), chef d'entreprise",
     cadre: 'Cadre, profession intellectuelle sup.', intermediaire: 'Profession intermédiaire', employe: 'Employé(e)',
     ouvrier: 'Ouvrier(ère)', retraite: 'Retraité(e)', sans_activite: 'Sans activité professionnelle' },
-  genre: { homme: 'Homme', femme: 'Femme', autre: 'Autre', nr: 'Ne se prononce pas' }
+  genre: { homme: 'Homme', femme: 'Femme', autre: 'Non binaire', nr: 'Ne se prononce pas' }
 };
 
 function xlLabel (map, v) {
