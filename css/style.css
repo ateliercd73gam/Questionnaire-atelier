@@ -229,6 +229,12 @@ body.fixed {
 }
 @media (hover: hover) { .freq-btn:not(.sel):hover { background: var(--mist); } }
 .freq-btn.sel { background: var(--plate); font-weight: 600; }
+.freq-btn { position: relative; }
+.freq-btn::before, .freq-btn::after { content: ''; position: absolute; background: rgba(23, 33, 28, 0.1); pointer-events: none; }
+.freq-btn:nth-child(odd)::after { top: 24%; bottom: 24%; right: -2.5px; width: 1px; }
+.freq-btn:nth-child(n+3)::before { top: -2.5px; left: 14%; right: 14%; height: 1px; }
+
+#q_saisons.single .btn-next { display: none; }
 
 /* question activités : un peu plus large pour les pastilles */
 .stage-wide .slides { max-width: 660px; }
@@ -246,6 +252,8 @@ body.fixed {
   .freq-inner .freq-opts { margin: 0 10px 10px; }
   .freq-opts { grid-template-columns: 1fr; }
   .freq-btn { min-height: 44px; }
+  .freq-btn:nth-child(odd)::after { display: none; }
+  .freq-btn:nth-child(n+2)::before { top: -2.5px; left: 14%; right: 14%; height: 1px; }
   .level-q { font-size: 15px; }
   .seg-btn { padding: 8px 2px 7px; font-size: 13px; }
 }

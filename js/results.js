@@ -17,11 +17,12 @@ function escapeHtml (str) {
 
 const SECTIONS = [
   { title: 'Pratiques', panels: [
+    { title: 'Pratique une activité de pleine nature', map: XL.pratique, ordered: true, values: r => listOf(r.pratique) },
     { title: 'Activités pratiquées', map: XL.activites, values: r => listOf(r.activites).map(actKey), note: 'Plusieurs réponses possibles' },
     { title: 'Niveau (par activité)', map: XL.niveau, ordered: true, values: r => listOf(r.activites).map(a => (r.niveaux || {})[a]).filter(Boolean), per: 'activité' },
     { title: 'Fréquence (par activité)', map: XL.frequence, ordered: true, values: r => listOf(r.activites).map(a => (r.frequence || {})[a]).filter(Boolean), per: 'activité' },
     { title: 'Ce qui est recherché', map: XL.motif, values: r => listOf(r.motif_pratique), note: 'Plusieurs réponses possibles' },
-    { title: 'Saison principale', map: XL.saisons, ordered: true, values: r => listOf(r.saisons) }
+    { title: 'Saison(s) de pratique', map: XL.saisons, ordered: true, values: r => listOf(r.saisons), note: 'Plusieurs réponses possibles' }
   ] },
   { title: 'Préparation', panels: [
     { title: 'Préparation des sorties', map: XL.preparation, ordered: true, values: r => listOf(r.preparation) },
@@ -46,7 +47,7 @@ const SECTIONS = [
     { title: 'Âge', map: XL.age, ordered: true, values: r => listOf(r.age) },
     { title: 'Situation professionnelle', map: XL.csp, ordered: true, values: r => listOf(r.csp) },
     { title: 'Genre', map: XL.genre, ordered: true, values: r => listOf(r.genre) },
-    { title: "Département ou pays d'origine", values: r => listOf(r.departement), top: 10 }
+    { title: 'Département ou pays de résidence', values: r => listOf(r.departement), top: 10 }
   ] }
 ];
 

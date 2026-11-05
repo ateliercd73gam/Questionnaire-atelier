@@ -21,7 +21,7 @@ const CONFIG = {
   ZOOM: 2.5
 };
 
-const SCHEMA_VERSION = 6;
+const SCHEMA_VERSION = 7;
 const LEVELS = [
   ['debutant',      'Débutant',      'M2 13 L12 3 L22 13 Z'],
   ['intermediaire', 'Intermédiaire', 'M1 13 L8 5 L12 9 L16 5 L23 13 Z'],
@@ -37,8 +37,10 @@ const ACT_NOUNS = {
   rando: 'la randonnée', trail: 'le trail', promenade: 'la promenade', orientation: "la course d'orientation",
   vtt: 'le VTT', vttae: 'le VTT électrique', escalade: "l'escalade", via_ferrata: 'la via ferrata',
   parapente: 'le parapente', ski_fond: 'le ski de fond', ski_rando: 'le ski de randonnée', raquettes: 'la raquette',
-  biathlon: 'le biathlon', peche: 'la pêche', chasse: 'la chasse', equitation: "l'équitation"
+  biathlon: 'le biathlon', peche: 'la pêche', chasse: 'la chasse', equitation: "l'équitation",
+  cueillette: 'la cueillette', observation_faune: "l'observation de la faune", promenade_chien: 'la promenade du chien'
 };
+const LEVEL_PREP = { promenade: null, promenade_chien: null, cueillette: null, observation_faune: null, peche: 'de', chasse: 'de' };
 const MOYENS_LIEUX = {
   internet: 'sur Internet', reseaux: 'sur les réseaux sociaux', appli: 'dans les applications de sentiers',
   tourisme: 'auprès des offices de tourisme', papier: 'dans les cartes et guides papier', proches: 'auprès de vos proches'
@@ -72,6 +74,25 @@ function signTitle (sign) {
     name = `${word} ${CONFIG.SIGNS.indexOf(sign) + 1}`;
   }
   return sign.aspect ? `${name} · ${sign.aspect}` : name;
+}
+
+function levelPrep (act) {
+  return Object.prototype.hasOwnProperty.call(LEVEL_PREP, act) ? LEVEL_PREP[act] : 'en';
+}
+
+function needsLevel (act) {
+  return levelPrep(act) !== null;
+}
+
+function adaptSaisons () {
+  const slide = $('q_saisons');
+  const single = state.responses.activites.length <= 1;
+  const arr = state.responses.saisons;
+  slide.classList.toggle('single', single);
+  slide.querySelector('.opts').classList.toggle('multi', !single);
+  if (single && arr.length > 1) arr.splice(1);
+  slide.querySelectorAll('.opt').forEach(o => o.classList.toggle('sel', arr.includes(o.dataset.value)));
+  updateNextBtn(slide);
 }
 
 function adaptTitles () {
@@ -174,7 +195,8 @@ const state = {
     frequence: {},
     niveaux: {},
     motif_pratique: [],
-    saisons: null,
+    pratique: null,
+    saisons: [],
     preparation: null,
     moyens: [],
     infos_recherchees: '',
@@ -194,7 +216,7 @@ const state = {
 };
 
 const ALL_STEPS = [
-  'q_activites', 'q_frequence', 'q_motif', 'q_saisons',
+  'q_pratique', 'q_activites', 'q_frequence', 'q_motif', 'q_saisons',
   'q_preparation', 'q_moyens', 'q_infos', 'q_delai',
   'q_hors_sentier', 'q_hors_raisons', 'q7', 'q8',
   'signs', 'q_accueil', 'q_besoins',
@@ -202,7 +224,14 @@ const ALL_STEPS = [
   'q_fin', 'merci'
 ];
 
+const PRACTICE_STEPS = [
+  'q_activites', 'q_frequence', 'q_motif', 'q_saisons', 'q_preparation', 'q_moyens', 'q_infos', 'q_delai',
+  'q_hors_sentier', 'q_hors_raisons', 'q_visite'
+];
+
 const STEP_KEYS = {
+  q_activites: 'activites', q_frequence: 'frequence', q_motif: 'motif_pratique', q_saisons: 'saisons',
+  q_preparation: 'preparation', q_hors_sentier: 'hors_sentier', q_visite: 'type_visite',
   q_moyens: 'moyens', q_infos: 'infos_recherchees', q_delai: 'delai_preparation',
   q_hors_raisons: 'hors_sentier_raisons', q8: 'raisons_non_lecture'
 };
@@ -210,6 +239,7 @@ const STEP_KEYS = {
 function $ (id) { return document.getElementById(id); }
 
 function asList (v) { return Array.isArray(v) ? v : (v ? [v] : []); }
+function practices (r) { return r.pratique !== 'non'; }
 function readsAll (list) { return list.length === 1 && list[0] === 'lis_tout'; }
 function prepares (r) { return !!r.preparation && r.preparation !== 'aucune'; }
 function leavesTrail (r) { return r.hors_sentier === 'parfois' || r.hors_sentier === 'souvent'; }
@@ -217,6 +247,7 @@ function leavesTrail (r) { return r.hors_sentier === 'parfois' || r.hors_sentier
 function buildSteps () {
   const r = state.responses;
   return ALL_STEPS.filter(s => {
+    if (PRACTICE_STEPS.includes(s) && !practices(r)) return false;
     if (s === 'q_moyens' || s === 'q_infos') return prepares(r);
     if (s === 'q_delai') return r.preparation === 'avant';
     if (s === 'q_hors_raisons') return leavesTrail(r);
@@ -271,6 +302,7 @@ function navigate (direction) {
     $('stage').classList.toggle('stage-center', toId === 'merci');
     if (toId === 'signs') initSignSection(direction);
     if (toId === 'q_frequence') renderFreq();
+    if (toId === 'q_saisons') adaptSaisons();
     if (toId === 'q_accueil') showAccueil(Math.max(0, CONFIG.ACCUEIL.findIndex(a => !state.responses.accueil_notes[a.id])));
     adaptTitles();
     fitSlide(toEl);
@@ -396,7 +428,10 @@ function onOptionClick (e) {
     const max = +slide.dataset.max;
     if (i !== -1 && 'levels' in slide.dataset) { removeActivity(slide, value); return; }
     if (i === -1 && max && arr.length >= max) { bumpCount(); return; }
-    if (i === -1) {
+    const single = slide.classList.contains('single');
+    if (single) {
+      arr.splice(0, arr.length, value);
+    } else if (i === -1) {
       const exclusive = v => slide.querySelector(`.opt[data-value="${v}"]`).hasAttribute('data-exclusive');
       const keep = opt.hasAttribute('data-exclusive') ? [] : arr.filter(v => !exclusive(v));
       arr.splice(0, arr.length, ...keep, value);
@@ -406,10 +441,18 @@ function onOptionClick (e) {
     slide.querySelectorAll('.opt').forEach(o => o.classList.toggle('sel', arr.includes(o.dataset.value)));
     togglePrecise(slide, arr);
     if (i !== -1 && 'custom' in opt.dataset) opt.remove();
-    if ('levels' in slide.dataset) { renderLevels(slide, arr); updateActCount(slide, arr); openLevelPop(slide, value); }
+    if ('levels' in slide.dataset) {
+      renderLevels(slide, arr);
+      updateActCount(slide, arr);
+      if (needsLevel(value)) openLevelPop(slide, value);
+    }
     const precise = i === -1 && slide.querySelector(`.precise[data-for="${value}"]`);
     if (precise) (precise.querySelector('input') || precise).focus();
     updateNextBtn(slide);
+    if (single) {
+      clearTimeout(autoTimer);
+      autoTimer = setTimeout(() => { if (slide.classList.contains('active')) nextStep(); }, 300);
+    }
     return;
   }
 
@@ -465,8 +508,10 @@ function openLevelPop (slide, act) {
   const box = pop.parentElement;
   const chip = box.querySelector(`.chip[data-value="${CSS.escape(act)}"]`);
   pop.dataset.act = act;
-  const name = chip.querySelector('span').textContent;
-  pop.querySelector('strong').textContent = /^[A-Z]{2}/.test(name) ? name : name.charAt(0).toLowerCase() + name.slice(1);
+  const text = chip.querySelector('span').textContent;
+  const name = /^[A-Z]{2}/.test(text) ? text : text.charAt(0).toLowerCase() + text.slice(1);
+  const prep = levelPrep(act) === 'de' ? (/^[aeiouyhâéèêîôû]/i.test(name) ? "d'" : 'de ') : 'en ';
+  pop.querySelector('.level-q').innerHTML = `Votre niveau ${prep}<strong>${esc(name)}</strong>\u00a0?`;
   box.querySelectorAll('.chip').forEach(c => c.classList.toggle('open', c === chip));
   pop.hidden = false;
 
@@ -671,7 +716,7 @@ function onFieldKey (e) {
 function isAnswered (slide) {
   const v = state.responses[slide.dataset.key];
   switch (slide.dataset.type) {
-    case 'multi':  return v.length > 0 && (!('levels' in slide.dataset) || v.every(a => state.responses.niveaux[a]));
+    case 'multi':  return v.length > 0 && (!('levels' in slide.dataset) || v.every(a => !needsLevel(a) || state.responses.niveaux[a]));
     case 'freq':   return state.responses.activites.every(a => v[a]);
     case 'rating': return CONFIG.ACCUEIL.every(a => v[a.id]);
     case 'text':   return 'optional' in slide.dataset || v.trim() !== '';
@@ -836,13 +881,16 @@ function updateClickUI () {
 }
 
 function isCompleteResponse (r) {
-  if (!r || r.v !== SCHEMA_VERSION) return false;
+  if (!r || (r.v !== SCHEMA_VERSION && r.v !== 6)) return false;
   const list = k => Array.isArray(r[k]) && r[k].length > 0;
-  const lists = ['activites', 'motif_pratique', 'attention_signaletique', 'type_visite'];
+  const lists = practices(r) ? ['activites', 'motif_pratique', 'attention_signaletique', 'type_visite'] : ['attention_signaletique'];
   if (lists.some(k => !list(k))) return false;
-  if (r.activites.some(a => !LEVELS.some(([k]) => (r.niveaux || {})[a] === k))) return false;
-  if (r.activites.some(a => !FREQS.some(([k]) => (r.frequence || {})[a] === k))) return false;
-  if (['saisons', 'preparation', 'hors_sentier', 'age', 'csp', 'departement', 'genre'].some(k => !r[k])) return false;
+  if (r.v === SCHEMA_VERSION && !['oui', 'non'].includes(r.pratique)) return false;
+  const activites = practices(r) ? r.activites : [];
+  if (activites.some(a => needsLevel(a) && !LEVELS.some(([k]) => (r.niveaux || {})[a] === k))) return false;
+  if (activites.some(a => !FREQS.some(([k]) => (r.frequence || {})[a] === k))) return false;
+  if (practices(r) && (!asList(r.saisons).length || !r.preparation || !r.hors_sentier)) return false;
+  if (['age', 'csp', 'departement', 'genre'].some(k => !r[k])) return false;
   if (prepares(r) && !list('moyens')) return false;
   if (r.preparation === 'avant' && !r.delai_preparation) return false;
   if (leavesTrail(r) && !list('hors_sentier_raisons')) return false;
@@ -868,7 +916,7 @@ async function submitSurvey () {
   const steps = buildSteps();
   Object.entries(STEP_KEYS).forEach(([id, key]) => {
     const type = $(id).dataset.type;
-    if (!steps.includes(id)) r[key] = type === 'multi' ? [] : type === 'text' ? '' : null;
+    if (!steps.includes(id)) r[key] = type === 'multi' ? [] : type === 'text' ? '' : type === 'freq' ? {} : null;
   });
 
   const precisions = {};
@@ -881,7 +929,10 @@ async function submitSurvey () {
 
   const niveaux = {};
   const frequence = {};
-  r.activites.forEach(a => { niveaux[a] = r.niveaux[a]; frequence[a] = r.frequence[a]; });
+  r.activites.forEach(a => {
+    if (needsLevel(a)) niveaux[a] = r.niveaux[a];
+    frequence[a] = r.frequence[a];
+  });
 
   const record = { ...r, precisions, niveaux, frequence,
     infos_recherchees: r.infos_recherchees.trim(), besoins: r.besoins.trim(), departement: r.departement.trim(),

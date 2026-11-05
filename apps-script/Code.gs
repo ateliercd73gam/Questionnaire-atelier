@@ -25,11 +25,13 @@ const MAX_RECORD_CHARS = 20000;
 const GRID_ROWS = 3000;
 
 const L = {
+  pratique: { oui: 'Oui', non: 'Non' },
   activites: { rando: 'Randonnée', trail: 'Trail', promenade: 'Promenade', orientation: "Course d'orientation",
     vtt: 'VTT', vttae: 'VTT électrique', escalade: 'Escalade', via_ferrata: 'Via ferrata',
     parapente: 'Parapente',
     ski_fond: 'Ski de fond', ski_rando: 'Ski de randonnée', raquettes: 'Raquettes', biathlon: 'Biathlon',
-    peche: 'Pêche', chasse: 'Chasse', equitation: 'Équitation', autre: 'Autre' },
+    peche: 'Pêche', chasse: 'Chasse', equitation: 'Équitation', cueillette: 'Cueillette',
+    observation_faune: 'Observation de la faune', promenade_chien: 'Promenade du chien', autre: 'Autre' },
   frequence: { semaine: 'Chaque semaine', plusieurs_semaine: 'Plusieurs fois par semaine', mois: '1 à 2 fois par mois',
     annee: 'Quelques fois par an' },
   niveau: { debutant: 'Débutant', intermediaire: 'Intermédiaire', avance: 'Avancé' },
@@ -44,7 +46,8 @@ const L = {
   horsSentier: { jamais: 'Jamais', parfois: 'Parfois', souvent: 'Souvent' },
   horsRaisons: { lisibilite: 'Chemin ou balisage peu clair', decouverte: "Découvrir d'autres chemins / paysages",
     raccourcis: 'Prendre un raccourci', autre: 'Autre raison' },
-  lecture: { lis_tout: 'Lit tout', partiellement: 'Survole', carte: 'Surtout la carte', reglement: 'Surtout les règles',
+  lecture: { lis_tout: 'Lit tout', partiellement: 'Survole', infos_generales: 'Informations générales du site',
+    carte: 'Surtout la carte', reglement: 'Surtout les règles',
     sensibilisation: 'Surtout la sensibilisation', ne_lis_pas: "Ne s'arrête pas" },
   raisons: { trop_infos: "Trop d'informations", textes: 'Textes trop petits ou trop longs', emplacement: 'Mal placés / peu visibles',
     connais: 'Connaît déjà le site', gps: 'Se repère au téléphone / GPS', desinteret: "Pas d'intérêt" },
@@ -109,10 +112,11 @@ function clicks_(record, signId) {
 const COLS = [
   { h: 'Date',                       w: 125, v: r => new Date(r.timestamp) },
   { h: 'Durée (s)',                  w: 70,  v: r => r.duration_s },
+  { h: 'Pratique de pleine nature',  w: 100, v: r => lab_(L.pratique, r.pratique) },
   { h: 'Activités (niveau)',         w: 320, v: r => activites_(r) },
   { h: 'Fréquence (par activité)',   w: 320, v: r => frequences_(r) },
   { h: 'Ce qui est recherché',       w: 280, v: r => labs_(L.motif, r.motif_pratique) },
-  { h: 'Saison',                     w: 120, v: r => labs_(L.saisons, r.saisons) },
+  { h: 'Saison(s)',                  w: 150, v: r => labs_(L.saisons, r.saisons) },
   { h: 'Préparation',                w: 150, v: r => labs_(L.preparation, r.preparation) },
   { h: 'Moyens de préparation',      w: 280, v: r => labsP_(L.moyens, r, 'moyens') },
   { h: 'Informations recherchées',   w: 280, v: r => r.infos_recherchees || '' },
@@ -128,7 +132,7 @@ const COLS = [
     { h: 'Sort avec',                  w: 180, v: r => labs_(L.visite, r.type_visite) },
     { h: 'Âge',                        w: 110, v: r => lab_(L.age, r.age) },
     { h: 'Situation professionnelle',  w: 230, v: r => lab_(L.csp, r.csp) },
-    { h: "Département d'origine",      w: 160, v: r => r.departement || '' },
+    { h: 'Département de résidence',   w: 160, v: r => r.departement || '' },
     { h: 'Genre',                      w: 110, v: r => lab_(L.genre, r.genre) },
     { h: "Avis sur l'enquête",         w: 320, v: r => r.avis_enquete || '' },
     { h: 'Images remplacées vues',     w: 260, v: r => images_(r) },
@@ -249,7 +253,7 @@ function doPost(e) {
 }
 
 function submit_(record, contact) {
-  if (!record || typeof record !== 'object' || record.v !== 6
+  if (!record || typeof record !== 'object' || [6, 7].indexOf(record.v) === -1
       || typeof record.session_id !== 'string' || record.session_id.length > 80) {
     return { ok: false, error: 'invalid_record' };
   }

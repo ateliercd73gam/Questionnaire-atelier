@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Questionnaire sur la pertinence de la signalétique</title>
-  <link rel="stylesheet" href="css/style.css?v=14">
+  <link rel="stylesheet" href="css/style.css?v=15">
 </head>
 <body class="fixed survey">
 
@@ -29,6 +29,14 @@
   <main class="stage" id="stage">
     <div class="slides">
 
+      <section class="slide" id="q_pratique" data-key="pratique" data-type="single" data-auto>
+        <h2 class="q-title">Pratiquez-vous une activité de pleine nature&nbsp;?</h2>
+        <div class="opts cols-2">
+          <button class="opt" data-value="oui">Oui</button>
+          <button class="opt" data-value="non">Non</button>
+        </div>
+      </section>
+
       <section class="slide" id="q_activites" data-key="activites" data-type="multi" data-levels data-max="3">
         <h2 class="q-title">Quelle(s) activité(s) pratiquez-vous le&nbsp;plus, et à quel niveau&nbsp;?</h2>
         <p class="act-count" id="actCount">Sélectionnez jusqu'à 3 activités</p>
@@ -49,13 +57,16 @@
           <button class="opt chip" data-value="peche"><span>Pêche</span></button>
           <button class="opt chip" data-value="chasse"><span>Chasse</span></button>
           <button class="opt chip" data-value="equitation"><span>Équitation</span></button>
+          <button class="opt chip" data-value="cueillette"><span>Cueillette</span></button>
+          <button class="opt chip" data-value="observation_faune"><span>Observation de la faune</span></button>
+          <button class="opt chip" data-value="promenade_chien"><span>Promenade du chien</span></button>
           <button type="button" class="chip-add" id="chipAdd">Autre…</button>
           <form class="chip-form" id="chipForm" hidden>
             <input type="text" maxlength="40" placeholder="Votre activité" aria-label="Autre activité" autocomplete="off">
             <button type="submit">Ajouter</button>
           </form>
           <div class="level-pop" id="levelPop" role="dialog" aria-label="Niveau" hidden>
-            <p class="level-q">Votre niveau en <strong></strong>&nbsp;?</p>
+            <p class="level-q"></p>
             <div class="seg" role="group"></div>
           </div>
         </div>
@@ -79,14 +90,15 @@
         <button class="btn btn-primary btn-full btn-next" onclick="nextStep()">Suivant</button>
       </section>
 
-      <section class="slide" id="q_saisons" data-key="saisons" data-type="single" data-auto>
-        <h2 class="q-title" data-one="En quelle saison pratiquez-vous le plus {act} ?" data-many="En quelle saison pratiquez-vous le plus ces activités ?"></h2>
-        <div class="opts cols-2">
-          <button class="opt" data-value="printemps">Printemps</button>
-          <button class="opt" data-value="ete">Été</button>
-          <button class="opt" data-value="automne">Automne</button>
-          <button class="opt" data-value="hiver">Hiver</button>
+      <section class="slide" id="q_saisons" data-key="saisons" data-type="multi">
+        <h2 class="q-title" data-one="En quelle saison pratiquez-vous le plus {act} ?" data-many="En quelle(s) saison(s) pratiquez-vous ces activités ?"></h2>
+        <div class="opts cols-2 multi">
+          <button class="opt" data-value="printemps"><span>Printemps</span></button>
+          <button class="opt" data-value="ete"><span>Été</span></button>
+          <button class="opt" data-value="automne"><span>Automne</span></button>
+          <button class="opt" data-value="hiver"><span>Hiver</span></button>
         </div>
+        <button class="btn btn-primary btn-full btn-next" onclick="nextStep()">Suivant</button>
       </section>
 
       <section class="slide" id="q_preparation" data-key="preparation" data-type="single" data-auto>
@@ -167,6 +179,7 @@
         <div class="opts multi">
           <button class="opt" data-value="lis_tout" data-exclusive><span>Je lis tout</span></button>
           <button class="opt" data-value="partiellement"><span>Je survole</span></button>
+          <button class="opt" data-value="infos_generales"><span>Je lis les informations générales du site</span></button>
           <button class="opt" data-value="carte"><span>Je regarde surtout la carte</span></button>
           <button class="opt" data-value="reglement"><span>Je cherche les règles et les interdictions</span></button>
           <button class="opt" data-value="sensibilisation"><span>Je lis surtout les messages de sensibilisation</span></button>
@@ -263,7 +276,7 @@
       </section>
 
       <section class="slide" id="q_departement" data-key="departement" data-type="text">
-        <h2 class="q-title">Quel est votre département d'origine&nbsp;?</h2>
+        <h2 class="q-title">Quel est votre département de résidence&nbsp;?</h2>
         <div class="ac">
           <input class="field" id="placeInput" type="text" maxlength="80" placeholder="Ex. Savoie, 73… ou votre pays" autocomplete="off"
                  role="combobox" aria-autocomplete="list" aria-controls="placeList" aria-expanded="false">
@@ -308,6 +321,6 @@
 
   <script src="js/auth.js?v=6"></script>
   <script src="js/db.js?v=7"></script>
-  <script src="js/app.js?v=19"></script>
+  <script src="js/app.js?v=22"></script>
 </body>
 </html>
