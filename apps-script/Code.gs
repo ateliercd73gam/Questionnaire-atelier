@@ -3,7 +3,7 @@ const SHEET_NAME = 'Tableau de réponses';
 
 const SITUATIONS = [
   { id: 'situation_1', label: 'Situation 1 · pertinent' },
-  { id: 'situation_2', label: 'Situation 2 · inutile' }
+  { id: 'situation_2', label: 'Situation 2 · pertinent' }
 ];
 
 const INSTALLATIONS = [
@@ -26,7 +26,7 @@ const GRID_ROWS = 3000;
 
 const L = {
   pratique: { oui: 'Oui', non: 'Non' },
-  activites: { rando: 'Randonnée', trail: 'Trail', promenade: 'Promenade', orientation: "Course d'orientation",
+  activites: { rando: 'Randonnée', trail: 'Trail', promenade: 'Balade', orientation: "Course d'orientation",
     vtt: 'VTT', vttae: 'VTT électrique', escalade: 'Escalade', via_ferrata: 'Via ferrata',
     parapente: 'Parapente',
     ski_fond: 'Ski de fond', ski_rando: 'Ski de randonnée', raquettes: 'Raquettes', biathlon: 'Biathlon',
@@ -43,12 +43,15 @@ const L = {
     papier: 'Cartes et guides papier', proches: 'Recommandations de proches' },
   delai: { plus_6_mois: 'Plus de 6 mois avant', '2_6_mois': 'Entre 2 et 6 mois avant', '1_mois': 'Environ un mois avant',
     '1_semaine': 'Environ une semaine avant', veille: 'La veille', jour_meme: 'Le jour même' },
+  supports: { panneaux: "Panneaux d'entrée du site", balisage: 'Balisage / panneaux directionnels',
+    accueil: "Point d'accueil / office de tourisme", telephone: 'Téléphone (sites, applications)',
+    personnes: 'Personnes rencontrées sur place', autre: 'Autre support' },
   horsSentier: { jamais: 'Jamais', parfois: 'Parfois', souvent: 'Souvent' },
   horsRaisons: { lisibilite: 'Chemin ou balisage peu clair', decouverte: "Découvrir d'autres chemins / paysages",
     raccourcis: 'Prendre un raccourci', autre: 'Autre raison' },
   lecture: { lis_tout: 'Lit tout', partiellement: 'Survole', infos_generales: 'Informations générales du site',
     carte: 'Surtout la carte', reglement: 'Surtout les règles',
-    sensibilisation: 'Surtout la sensibilisation', ne_lis_pas: "Ne s'arrête pas" },
+    sensibilisation: 'Surtout la sensibilisation', ne_lis_pas: "Ne s'arrête pas", autre: 'Autre' },
   raisons: { trop_infos: "Trop d'informations", textes: 'Textes trop petits ou trop longs', emplacement: 'Mal placés / peu visibles',
     connais: 'Connaît déjà le site', gps: 'Se repère au téléphone / GPS', desinteret: "Pas d'intérêt" },
   visite: { seul: 'Seul(e)', couple: 'En couple', famille: 'En famille', amis: 'Entre amis', groupe: 'En groupe organisé' },
@@ -97,6 +100,12 @@ function frequences_(record) {
   const values = Array.isArray(record.activites) ? record.activites : [];
   return values.filter(v => f[v]).map(v => actName_(v) + ' : ' + lab_(L.frequence, f[v])).join(', ');
 }
+function preparations_(record) {
+  const p = record.preparation;
+  if (!p || typeof p !== 'object') return lab_(L.preparation, p);
+  const values = Array.isArray(record.activites) ? record.activites : [];
+  return values.filter(v => p[v]).map(v => actName_(v) + ' : ' + lab_(L.preparation, p[v])).join(', ');
+}
 function images_(record) {
   const images = record.images || {};
   return IMAGE_SLOTS.filter(s => images[s.id] && images[s.id] !== 'origine')
@@ -117,18 +126,20 @@ const COLS = [
   { h: 'Fréquence (par activité)',   w: 320, v: r => frequences_(r) },
   { h: 'Ce qui est recherché',       w: 280, v: r => labs_(L.motif, r.motif_pratique) },
   { h: 'Saison(s)',                  w: 150, v: r => labs_(L.saisons, r.saisons) },
-  { h: 'Préparation',                w: 150, v: r => labs_(L.preparation, r.preparation) },
+  { h: 'Préparation (par activité)', w: 320, v: r => preparations_(r) },
   { h: 'Moyens de préparation',      w: 280, v: r => labsP_(L.moyens, r, 'moyens') },
-  { h: 'Informations recherchées',   w: 280, v: r => r.infos_recherchees || '' },
+  { h: 'Informations recherchées avant de partir', w: 280, v: r => r.infos_recherchees || '' },
   { h: 'Délai de préparation',       w: 160, v: r => lab_(L.delai, r.delai_preparation) },
-  { h: 'Hors-sentier',               w: 90,  v: r => lab_(L.horsSentier, r.hors_sentier) },
-  { h: 'Raisons hors-sentier',       w: 260, v: r => labsP_(L.horsRaisons, r, 'hors_sentier_raisons') },
-  { h: 'Lecture des panneaux',       w: 230, v: r => labs_(L.lecture, r.attention_signaletique) },
+  { h: 'Supports sur place',         w: 280, v: r => labsP_(L.supports, r, 'supports_sur_place') },
+  { h: 'Informations recherchées sur place', w: 280, v: r => r.infos_sur_place || '' },
+  { h: 'Lecture des panneaux',       w: 230, v: r => labsP_(L.lecture, r, 'attention_signaletique') },
   { h: 'Freins à la lecture',        w: 260, v: r => labs_(L.raisons, r.raisons_non_lecture) }
 ].concat(
   INSTALLATIONS.map(a => ({ h: 'Note ' + a.label + ' (1 à 4)', w: 100, v: r => (r.accueil_notes || {})[a.id] || '' })),
   [
     { h: 'Attentes et idées',          w: 320, v: r => r.besoins || '' },
+    { h: 'Hors-sentier',               w: 90,  v: r => lab_(L.horsSentier, r.hors_sentier) },
+    { h: 'Raisons hors-sentier',       w: 260, v: r => labsP_(L.horsRaisons, r, 'hors_sentier_raisons') },
     { h: 'Sort avec',                  w: 180, v: r => labs_(L.visite, r.type_visite) },
     { h: 'Âge',                        w: 110, v: r => lab_(L.age, r.age) },
     { h: 'Situation professionnelle',  w: 230, v: r => lab_(L.csp, r.csp) },
@@ -253,7 +264,7 @@ function doPost(e) {
 }
 
 function submit_(record, contact) {
-  if (!record || typeof record !== 'object' || [6, 7].indexOf(record.v) === -1
+  if (!record || typeof record !== 'object' || [6, 7, 8].indexOf(record.v) === -1
       || typeof record.session_id !== 'string' || record.session_id.length > 80) {
     return { ok: false, error: 'invalid_record' };
   }

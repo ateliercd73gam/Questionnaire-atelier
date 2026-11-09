@@ -2,7 +2,7 @@ const CONFIG = {
   SIGN_WORD: 'situation',
   SIGNS: [
     { id: 'situation_1', label: '', image: 'signs/situation-1.jpg?v=6', zoom: 1.3, aspect: 'pertinent',  focus: 'les plus utiles',  question: "Selon vous, quelles sont les informations les plus utiles de ce panneau ?" },
-    { id: 'situation_2', label: '', image: 'signs/situation-2.jpg?v=7', zoom: 1.3, aspect: 'inutile',    focus: 'les moins utiles', question: "Selon vous, quelles sont les informations les moins utiles de ce panneau ?" }
+    { id: 'situation_2', label: '', image: 'signs/situation-2.jpg?v=7', zoom: 1.3, aspect: 'pertinent',  focus: 'les plus utiles',  question: "Selon vous, quelles sont les informations les plus utiles de ce panneau ?", since: 8 }
   ],
   ACCUEIL: [
     { id: 'accueil_1', label: 'Installation 1', image: 'accueil/accueil-1.jpg?v=1' },
@@ -21,7 +21,7 @@ const CONFIG = {
   ZOOM: 2.5
 };
 
-const SCHEMA_VERSION = 7;
+const SCHEMA_VERSION = 8;
 const LEVELS = [
   ['debutant',      'Débutant',      'M2 13 L12 3 L22 13 Z'],
   ['intermediaire', 'Intermédiaire', 'M1 13 L8 5 L12 9 L16 5 L23 13 Z'],
@@ -33,11 +33,17 @@ const FREQS = [
   ['mois',              '1 à 2 fois par mois'],
   ['annee',             'Quelques fois par an']
 ];
+const PREPS = [
+  ['avant',     'Avant de partir'],
+  ['sur_place', 'Sur place'],
+  ['aucune',    'Je ne prépare pas']
+];
+const PER_ACT = { frequence: FREQS, preparation: PREPS };
 const ACT_NOUNS = {
-  rando: 'la randonnée', trail: 'le trail', promenade: 'la promenade', orientation: "la course d'orientation",
+  rando: 'la randonnée', trail: 'le trail', promenade: 'la balade', orientation: "la course d'orientation",
   vtt: 'le VTT', vttae: 'le VTT électrique', escalade: "l'escalade", via_ferrata: 'la via ferrata',
   parapente: 'le parapente', ski_fond: 'le ski de fond', ski_rando: 'le ski de randonnée', raquettes: 'la raquette',
-  biathlon: 'le biathlon', peche: 'la pêche', chasse: 'la chasse', equitation: "l'équitation",
+  peche: 'la pêche', chasse: 'la chasse', equitation: "l'équitation",
   cueillette: 'la cueillette', observation_faune: "l'observation de la faune", promenade_chien: 'la promenade du chien'
 };
 const LEVEL_PREP = { promenade: null, promenade_chien: null, cueillette: null, observation_faune: null, peche: 'de', chasse: 'de' };
@@ -197,10 +203,12 @@ const state = {
     motif_pratique: [],
     pratique: null,
     saisons: [],
-    preparation: null,
+    preparation: {},
     moyens: [],
     infos_recherchees: '',
     delai_preparation: null,
+    supports_sur_place: [],
+    infos_sur_place: '',
     hors_sentier: null,
     hors_sentier_raisons: [],
     attention_signaletique: [],
@@ -217,23 +225,24 @@ const state = {
 
 const ALL_STEPS = [
   'q_pratique', 'q_activites', 'q_frequence', 'q_motif', 'q_saisons',
-  'q_preparation', 'q_moyens', 'q_infos', 'q_delai',
-  'q_hors_sentier', 'q_hors_raisons', 'q7', 'q8',
+  'q_preparation', 'q_moyens', 'q_infos', 'q_delai', 'q_supports', 'q_infos_place',
+  'q7', 'q8',
   'signs', 'q_accueil', 'q_besoins',
-  'q_visite', 'q_age', 'q_csp', 'q_departement', 'q_genre',
+  'q_hors_sentier', 'q_hors_raisons', 'q_visite', 'q_age', 'q_csp', 'q_departement', 'q_genre',
   'q_fin', 'merci'
 ];
 
 const PRACTICE_STEPS = [
   'q_activites', 'q_frequence', 'q_motif', 'q_saisons', 'q_preparation', 'q_moyens', 'q_infos', 'q_delai',
-  'q_hors_sentier', 'q_hors_raisons', 'q_visite'
+  'q_supports', 'q_infos_place', 'q_hors_sentier', 'q_hors_raisons', 'q_visite'
 ];
 
 const STEP_KEYS = {
   q_activites: 'activites', q_frequence: 'frequence', q_motif: 'motif_pratique', q_saisons: 'saisons',
   q_preparation: 'preparation', q_hors_sentier: 'hors_sentier', q_visite: 'type_visite',
   q_moyens: 'moyens', q_infos: 'infos_recherchees', q_delai: 'delai_preparation',
-  q_hors_raisons: 'hors_sentier_raisons', q8: 'raisons_non_lecture'
+  q_hors_raisons: 'hors_sentier_raisons', q8: 'raisons_non_lecture',
+  q_supports: 'supports_sur_place', q_infos_place: 'infos_sur_place'
 };
 
 function $ (id) { return document.getElementById(id); }
@@ -242,14 +251,20 @@ function asList (v) { return Array.isArray(v) ? v : (v ? [v] : []); }
 function practices (r) { return r.pratique !== 'non'; }
 function readsAll (list) { return list.length === 1 && list[0] === 'lis_tout'; }
 function prepares (r) { return !!r.preparation && r.preparation !== 'aucune'; }
+function prepValues (r) {
+  const p = r.preparation;
+  return p && typeof p === 'object' ? asList(r.activites).map(a => p[a]).filter(Boolean) : asList(p);
+}
+function prepsBefore (r) { return prepValues(r).includes('avant'); }
+function prepsOnSite (r) { return prepValues(r).includes('sur_place'); }
 function leavesTrail (r) { return r.hors_sentier === 'parfois' || r.hors_sentier === 'souvent'; }
 
 function buildSteps () {
   const r = state.responses;
   return ALL_STEPS.filter(s => {
     if (PRACTICE_STEPS.includes(s) && !practices(r)) return false;
-    if (s === 'q_moyens' || s === 'q_infos') return prepares(r);
-    if (s === 'q_delai') return r.preparation === 'avant';
+    if (s === 'q_moyens' || s === 'q_infos' || s === 'q_delai') return prepsBefore(r);
+    if (s === 'q_supports' || s === 'q_infos_place') return prepsOnSite(r);
     if (s === 'q_hors_raisons') return leavesTrail(r);
     if (s === 'q8') return r.attention_signaletique.length > 0 && !readsAll(r.attention_signaletique);
     return true;
@@ -301,7 +316,7 @@ function navigate (direction) {
     window.scrollTo(0, 0);
     $('stage').classList.toggle('stage-center', toId === 'merci');
     if (toId === 'signs') initSignSection(direction);
-    if (toId === 'q_frequence') renderFreq();
+    if (toEl.dataset.type === 'freq') renderFreq(toEl);
     if (toId === 'q_saisons') adaptSaisons();
     if (toId === 'q_accueil') showAccueil(Math.max(0, CONFIG.ACCUEIL.findIndex(a => !state.responses.accueil_notes[a.id])));
     adaptTitles();
@@ -312,7 +327,7 @@ function navigate (direction) {
 
 function setStageMode (id) {
   $('stage').classList.toggle('stage-signs', id === 'signs' || id === 'q_accueil');
-  $('stage').classList.toggle('stage-wide', id === 'q_activites' || id === 'q_frequence');
+  $('stage').classList.toggle('stage-wide', ['q_activites', 'q_frequence', 'q_preparation'].includes(id));
 }
 
 function nextStep () { navigate('forward'); }
@@ -387,8 +402,9 @@ function onOptionClick (e) {
   const fb = e.target.closest('.freq-btn');
   if (fb) {
     const row  = fb.closest('.freq-row');
+    const slide = row.closest('.slide');
     const list = state.responses.activites;
-    const freq = state.responses.frequence;
+    const freq = state.responses[slide.dataset.key];
     const i    = +row.dataset.i;
     freq[row.dataset.act] = fb.dataset.freq;
     row.querySelectorAll('.freq-btn').forEach(b => b.classList.toggle('sel', b === fb));
@@ -397,8 +413,8 @@ function onOptionClick (e) {
     let next = list.findIndex((a, j) => j > i && !freq[a]);
     if (next === -1) next = list.findIndex(a => !freq[a]);
     clearTimeout(freqTimer);
-    freqTimer = setTimeout(() => setFreqOpen(next), 180);
-    updateNextBtn(fb.closest('.slide'));
+    freqTimer = setTimeout(() => setFreqOpen(slide, next), 180);
+    updateNextBtn(slide);
     return;
   }
 
@@ -406,7 +422,7 @@ function onOptionClick (e) {
   if (head) {
     const row = head.closest('.freq-row');
     clearTimeout(freqTimer);
-    setFreqOpen(row.classList.contains('open') ? -1 : +row.dataset.i);
+    setFreqOpen(row.closest('.slide'), row.classList.contains('open') ? -1 : +row.dataset.i);
     return;
   }
 
@@ -481,26 +497,27 @@ function activityName (act) {
   return span ? span.textContent : act;
 }
 
-function renderFreq (open) {
+function renderFreq (slide, open) {
+  const opts = PER_ACT[slide.dataset.key];
   const list = state.responses.activites;
-  const freq = state.responses.frequence;
+  const freq = state.responses[slide.dataset.key];
   if (open === undefined) open = list.findIndex(a => !freq[a]);
-  $('freqList').innerHTML = list.map((act, i) => {
+  slide.querySelector('.freq-list').innerHTML = list.map((act, i) => {
     const name = esc(activityName(act));
-    const f = FREQS.find(([k]) => k === freq[act]);
+    const f = opts.find(([k]) => k === freq[act]);
     return `<div class="freq-row${i === open ? ' open' : ''}${f ? '' : ' todo'}" data-act="${esc(act)}" data-i="${i}">
       <button type="button" class="freq-head"><span class="freq-name">${name}</span><span class="freq-val">${f ? f[1] : ''}</span></button>
       <div class="freq-body"><div class="freq-inner">
-        <div class="freq-opts" role="group" aria-label="Fréquence en ${name}">${FREQS.map(([k, label]) =>
+        <div class="freq-opts${opts.length === 3 ? ' cols-3' : ''}" role="group" aria-label="${name}">${opts.map(([k, label]) =>
           `<button type="button" class="freq-btn${freq[act] === k ? ' sel' : ''}" data-freq="${k}">${label}</button>`).join('')}</div>
       </div></div>
     </div>`;
   }).join('');
-  updateNextBtn($('q_frequence'));
+  updateNextBtn(slide);
 }
 
-function setFreqOpen (open) {
-  $('freqList').querySelectorAll('.freq-row').forEach(row => row.classList.toggle('open', +row.dataset.i === open));
+function setFreqOpen (slide, open) {
+  slide.querySelectorAll('.freq-row').forEach(row => row.classList.toggle('open', +row.dataset.i === open));
 }
 
 function openLevelPop (slide, act) {
@@ -781,7 +798,7 @@ function showBrief (sign) {
   const brief = $('signBrief');
   if (!brief) return;
   clearTimeout(state.briefTimer);
-  const seen = state.signDrafts[sign.id];
+  const seen = state.signDrafts[sign.id] || state.signOrder.indexOf(sign) > 0;
   brief.classList.toggle('on', !seen);
   $('signs').classList.toggle('briefing', !seen);
   if (seen) return;
@@ -881,18 +898,24 @@ function updateClickUI () {
 }
 
 function isCompleteResponse (r) {
-  if (!r || (r.v !== SCHEMA_VERSION && r.v !== 6)) return false;
+  if (!r || ![6, 7, SCHEMA_VERSION].includes(r.v)) return false;
   const list = k => Array.isArray(r[k]) && r[k].length > 0;
   const lists = practices(r) ? ['activites', 'motif_pratique', 'attention_signaletique', 'type_visite'] : ['attention_signaletique'];
   if (lists.some(k => !list(k))) return false;
-  if (r.v === SCHEMA_VERSION && !['oui', 'non'].includes(r.pratique)) return false;
+  if (r.v >= 7 && !['oui', 'non'].includes(r.pratique)) return false;
   const activites = practices(r) ? r.activites : [];
   if (activites.some(a => needsLevel(a) && !LEVELS.some(([k]) => (r.niveaux || {})[a] === k))) return false;
   if (activites.some(a => !FREQS.some(([k]) => (r.frequence || {})[a] === k))) return false;
   if (practices(r) && (!asList(r.saisons).length || !r.preparation || !r.hors_sentier)) return false;
   if (['age', 'csp', 'departement', 'genre'].some(k => !r[k])) return false;
-  if (prepares(r) && !list('moyens')) return false;
-  if (r.preparation === 'avant' && !r.delai_preparation) return false;
+  if (r.v >= 8) {
+    if (activites.some(a => !PREPS.some(([k]) => (r.preparation || {})[a] === k))) return false;
+    if (prepsBefore(r) && (!list('moyens') || !r.delai_preparation)) return false;
+    if (prepsOnSite(r) && !list('supports_sur_place')) return false;
+  } else {
+    if (prepares(r) && !list('moyens')) return false;
+    if (r.preparation === 'avant' && !r.delai_preparation) return false;
+  }
   if (leavesTrail(r) && !list('hors_sentier_raisons')) return false;
   if (!readsAll(r.attention_signaletique) && !list('raisons_non_lecture')) return false;
   const notes = r.accueil_notes || {};
@@ -929,13 +952,15 @@ async function submitSurvey () {
 
   const niveaux = {};
   const frequence = {};
+  const preparation = {};
   r.activites.forEach(a => {
     if (needsLevel(a)) niveaux[a] = r.niveaux[a];
     frequence[a] = r.frequence[a];
+    preparation[a] = r.preparation[a];
   });
 
-  const record = { ...r, precisions, niveaux, frequence,
-    infos_recherchees: r.infos_recherchees.trim(), besoins: r.besoins.trim(), departement: r.departement.trim(),
+  const record = { ...r, precisions, niveaux, frequence, preparation,
+    infos_recherchees: r.infos_recherchees.trim(), infos_sur_place: r.infos_sur_place.trim(), besoins: r.besoins.trim(), departement: r.departement.trim(),
     avis_enquete: $('avisEnquete').value.trim(),
     images: Object.fromEntries(IMAGE_SLOTS.map(s => [s.id, s.imageVersion])),
     v: SCHEMA_VERSION, session_id: state.sessionId, timestamp: new Date().toISOString(),

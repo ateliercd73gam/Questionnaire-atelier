@@ -25,10 +25,12 @@ const SECTIONS = [
     { title: 'Saison(s) de pratique', map: XL.saisons, ordered: true, values: r => listOf(r.saisons), note: 'Plusieurs réponses possibles' }
   ] },
   { title: 'Préparation', panels: [
-    { title: 'Préparation des sorties', map: XL.preparation, ordered: true, values: r => listOf(r.preparation) },
+    { title: 'Préparation des sorties (par activité)', map: XL.preparation, ordered: true, values: r => prepValues(r), per: 'activité' },
     { title: 'Moyens de préparation', map: XL.moyens, values: r => listOf(r.moyens), note: 'Plusieurs réponses possibles' },
     { title: 'Délai de préparation', map: XL.delai, ordered: true, values: r => listOf(r.delai_preparation) },
-    { title: 'Informations recherchées', text: r => r.infos_recherchees }
+    { title: 'Informations recherchées avant de partir', text: r => r.infos_recherchees },
+    { title: 'Supports utilisés sur place', map: XL.supports, values: r => listOf(r.supports_sur_place), note: 'Plusieurs réponses possibles' },
+    { title: 'Informations recherchées sur place', text: r => r.infos_sur_place }
   ] },
   { title: 'Sur le terrain', panels: [
     { title: 'Sortie des sentiers', map: XL.horsSentier, ordered: true, values: r => listOf(r.hors_sentier) },
@@ -60,7 +62,7 @@ function renderStats (data) {
   $('statsRow').innerHTML = [
     { val: total,                                                  lbl: 'Réponses complètes' },
     { val: median ? `${Math.max(1, Math.round(median / 60))} min` : '–', lbl: 'Durée médiane' },
-    { val: count(r => r.preparation === 'avant'),                  lbl: 'Préparent avant de partir' },
+    { val: count(prepsBefore),                                     lbl: 'Préparent avant de partir' },
     { val: count(r => ['parfois', 'souvent'].includes(r.hors_sentier)), lbl: 'Quittent les sentiers' },
     { val: count(r => listOf(r.attention_signaletique).includes('lis_tout')), lbl: 'Lisent tout le panneau' }
   ].map(s => `<div class="stat-card"><div class="stat-val">${s.val}</div><div class="stat-lbl">${s.lbl}</div></div>`).join('');
@@ -148,7 +150,7 @@ function renderHeatmaps (data) {
     data.forEach(r => {
       const clicks = (r.sign_interactions || {})[sign.id];
       if (!Array.isArray(clicks)) return;
-      if (versionOf(r, sign) === sign.imageVersion) allClicks.push(...clicks);
+      if (versionOf(r, sign) === sign.imageVersion && (r.v || 0) >= (sign.since || 0)) allClicks.push(...clicks);
       else old++;
     });
 
@@ -161,7 +163,7 @@ function renderHeatmaps (data) {
       </div>
       <p class="hmap-q">${escapeHtml(sign.question)}</p>
       <div class="hmap-body" id="hmap_${sign.id}"></div>
-      ${old ? `<p class="hmap-old">${old} réponse${old > 1 ? 's' : ''} sur une image précédente non affichée${old > 1 ? 's' : ''}</p>` : ''}
+      ${old ? `<p class="hmap-old">${old} réponse${old > 1 ? 's' : ''} sur une image ou une question précédente non affichée${old > 1 ? 's' : ''}</p>` : ''}
     `;
     grid.appendChild(card);
 

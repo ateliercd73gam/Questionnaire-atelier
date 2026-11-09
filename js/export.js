@@ -2,7 +2,7 @@ const XLSX_LIB = 'https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js
 
 const XL = {
   pratique: { oui: 'Oui', non: 'Non' },
-  activites: { rando: 'Randonnée', trail: 'Trail', promenade: 'Promenade', orientation: "Course d'orientation",
+  activites: { rando: 'Randonnée', trail: 'Trail', promenade: 'Balade', orientation: "Course d'orientation",
     vtt: 'VTT', vttae: 'VTT électrique', escalade: 'Escalade', via_ferrata: 'Via ferrata',
     parapente: 'Parapente',
     ski_fond: 'Ski de fond', ski_rando: 'Ski de randonnée', raquettes: 'Raquettes', biathlon: 'Biathlon',
@@ -19,12 +19,15 @@ const XL = {
     papier: 'Cartes et guides papier', proches: 'Recommandations de proches' },
   delai: { plus_6_mois: 'Plus de 6 mois avant', '2_6_mois': 'Entre 2 et 6 mois avant', '1_mois': 'Environ un mois avant',
     '1_semaine': 'Environ une semaine avant', veille: 'La veille', jour_meme: 'Le jour même' },
+  supports: { panneaux: "Panneaux d'entrée du site", balisage: 'Balisage / panneaux directionnels',
+    accueil: "Point d'accueil / office de tourisme", telephone: 'Téléphone (sites, applications)',
+    personnes: 'Personnes rencontrées sur place', autre: 'Autre support' },
   horsSentier: { jamais: 'Jamais', parfois: 'Parfois', souvent: 'Souvent' },
   horsRaisons: { lisibilite: 'Chemin ou balisage peu clair', decouverte: "Découvrir d'autres chemins / paysages",
     raccourcis: 'Prendre un raccourci', autre: 'Autre raison' },
   lecture: { lis_tout: 'Lit tout', partiellement: 'Survole', infos_generales: 'Informations générales du site',
     carte: 'Surtout la carte', reglement: 'Surtout les règles',
-    sensibilisation: 'Surtout la sensibilisation', ne_lis_pas: "Ne s'arrête pas" },
+    sensibilisation: 'Surtout la sensibilisation', ne_lis_pas: "Ne s'arrête pas", autre: 'Autre' },
   raisons: { trop_infos: "Trop d'informations", textes: 'Textes trop petits ou trop longs', emplacement: 'Mal placés / peu visibles',
     connais: 'Connaît déjà le site', gps: 'Se repère au téléphone / GPS', desinteret: "Pas d'intérêt" },
   visite: { seul: 'Seul(e)', couple: 'En couple', famille: 'En famille', amis: 'Entre amis', groupe: 'En groupe organisé' },
@@ -67,6 +70,12 @@ function xlFrequences (r) {
   return (Array.isArray(r.activites) ? r.activites : []).filter(v => f[v])
     .map(v => `${xlActName(v)} : ${xlLabel(XL.frequence, f[v])}`).join(', ');
 }
+function xlPreparations (r) {
+  const p = r.preparation;
+  if (!p || typeof p !== 'object') return xlLabel(XL.preparation, p);
+  return (Array.isArray(r.activites) ? r.activites : []).filter(v => p[v])
+    .map(v => `${xlActName(v)} : ${xlLabel(XL.preparation, p[v])}`).join(', ');
+}
 function versionDate (v) {
   const d = new Date(+String(v).slice(1));
   return isNaN(d) ? '' : d.toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }).replace(' ', ' à ');
@@ -95,18 +104,20 @@ function xlColumns () {
     { h: 'Fréquence (par activité)',   w: 46, v: r => xlFrequences(r) },
     { h: 'Ce qui est recherché',       w: 40, v: r => xlLabels(XL.motif, r.motif_pratique) },
     { h: 'Saison(s)',                  w: 22, v: r => xlLabels(XL.saisons, r.saisons) },
-    { h: 'Préparation',                w: 22, v: r => xlLabels(XL.preparation, r.preparation) },
+    { h: 'Préparation (par activité)', w: 46, v: r => xlPreparations(r) },
     { h: 'Moyens de préparation',      w: 40, v: r => xlLabelsP(XL.moyens, r, 'moyens') },
-    { h: 'Informations recherchées',   w: 40, v: r => r.infos_recherchees || '' },
+    { h: 'Informations recherchées avant de partir', w: 40, v: r => r.infos_recherchees || '' },
     { h: 'Délai de préparation',       w: 22, v: r => xlLabel(XL.delai, r.delai_preparation) },
-    { h: 'Hors-sentier',               w: 13, v: r => xlLabel(XL.horsSentier, r.hors_sentier) },
-    { h: 'Raisons hors-sentier',       w: 38, v: r => xlLabelsP(XL.horsRaisons, r, 'hors_sentier_raisons') },
-    { h: 'Lecture des panneaux',       w: 34, v: r => xlLabels(XL.lecture, r.attention_signaletique) },
+    { h: 'Supports sur place',         w: 40, v: r => xlLabelsP(XL.supports, r, 'supports_sur_place') },
+    { h: 'Informations recherchées sur place', w: 40, v: r => r.infos_sur_place || '' },
+    { h: 'Lecture des panneaux',       w: 34, v: r => xlLabelsP(XL.lecture, r, 'attention_signaletique') },
     { h: 'Freins à la lecture',        w: 38, v: r => xlLabels(XL.raisons, r.raisons_non_lecture) }
   ].concat(
     CONFIG.ACCUEIL.map(a => ({ h: `Note ${a.label} (1 à 4)`, w: 14, v: r => (r.accueil_notes || {})[a.id] || '' })),
     [
       { h: 'Attentes et idées',          w: 46, v: r => r.besoins || '' },
+      { h: 'Hors-sentier',               w: 13, v: r => xlLabel(XL.horsSentier, r.hors_sentier) },
+      { h: 'Raisons hors-sentier',       w: 38, v: r => xlLabelsP(XL.horsRaisons, r, 'hors_sentier_raisons') },
       { h: 'Sort avec',                  w: 26, v: r => xlLabels(XL.visite, r.type_visite) },
       { h: 'Âge',                        w: 16, v: r => xlLabel(XL.age, r.age) },
       { h: 'Situation professionnelle',  w: 34, v: r => xlLabel(XL.csp, r.csp) },

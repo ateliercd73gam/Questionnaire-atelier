@@ -50,7 +50,7 @@ body.fixed {
 /* barre d'avancement */
 .progress {
   position: fixed; top: 24px; left: 50%; z-index: 20; transform: translateX(-50%);
-  width: min(480px, calc(100vw - 136px)); height: 8px;
+  width: min(480px, calc(100vw - 248px)); height: 8px;
   background: var(--mist); border-radius: 999px;
 }
 .progress-fill {
@@ -66,13 +66,14 @@ body.fixed {
 
 .back {
   position: fixed; top: 10px; left: 16px; z-index: 21;
-  width: 36px; height: 36px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
+  height: 36px; padding: 0 15px 0 13px; border-radius: 999px;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
   background: var(--mist); border: none; cursor: pointer;
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
   visibility: hidden; transition: background var(--t);
 }
 .back::before {
-  content: ''; width: 9px; height: 9px; margin-left: 3px;
+  content: ''; width: 8px; height: 8px; margin-left: 3px;
   border-left: 2.5px solid var(--ink); border-bottom: 2.5px solid var(--ink);
   transform: rotate(45deg);
 }
@@ -234,6 +235,13 @@ body.fixed {
 .freq-btn:nth-child(odd)::after { top: 24%; bottom: 24%; right: -2.5px; width: 1px; }
 .freq-btn:nth-child(n+3)::before { top: -2.5px; left: 14%; right: 14%; height: 1px; }
 
+@media (min-width: 481px) {
+  .freq-opts.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .freq-opts.cols-3 .freq-btn::before { display: none; }
+  .freq-opts.cols-3 .freq-btn:nth-child(2)::after { top: 24%; bottom: 24%; right: -2.5px; width: 1px; }
+  .freq-opts.cols-3 .freq-btn:last-child::after { display: none; }
+}
+
 #q_saisons.single .btn-next { display: none; }
 
 /* question activités : un peu plus large pour les pastilles */
@@ -266,6 +274,7 @@ body.fixed {
     background: linear-gradient(var(--paper) 78%, rgba(255,255,255,0));
   }
   body.fixed .stage { height: auto; min-height: 100vh; min-height: 100dvh; overflow: visible; padding-top: 64px; padding-bottom: calc(var(--band-h) * 0.6 + 56px); }
+  .progress { left: 124px; right: 20px; width: auto; transform: none; }
 }
 
 .opts.compact { gap: 8px; }

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Questionnaire sur la pertinence de la signalétique</title>
-  <link rel="stylesheet" href="css/style.css?v=15">
+  <link rel="stylesheet" href="css/style.css?v=16">
 </head>
 <body class="fixed survey">
 
@@ -24,7 +24,7 @@
   </div>
 
   <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
-  <button class="back" id="headerBack" onclick="prevStep()" aria-label="Retour"></button>
+  <button class="back" id="headerBack" onclick="prevStep()">Retour</button>
 
   <main class="stage" id="stage">
     <div class="slides">
@@ -43,7 +43,7 @@
         <div class="opts multi chips">
           <button class="opt chip" data-value="rando"><span>Randonnée</span></button>
           <button class="opt chip" data-value="trail"><span>Trail</span></button>
-          <button class="opt chip" data-value="promenade"><span>Promenade</span></button>
+          <button class="opt chip" data-value="promenade"><span>Balade</span></button>
           <button class="opt chip" data-value="orientation"><span>Course d'orientation</span></button>
           <button class="opt chip" data-value="vtt"><span>VTT</span></button>
           <button class="opt chip" data-value="vttae"><span>VTT électrique</span></button>
@@ -53,7 +53,6 @@
           <button class="opt chip" data-value="ski_fond"><span>Ski de fond</span></button>
           <button class="opt chip" data-value="ski_rando"><span>Ski de randonnée</span></button>
           <button class="opt chip" data-value="raquettes"><span>Raquettes</span></button>
-          <button class="opt chip" data-value="biathlon"><span>Biathlon</span></button>
           <button class="opt chip" data-value="peche"><span>Pêche</span></button>
           <button class="opt chip" data-value="chasse"><span>Chasse</span></button>
           <button class="opt chip" data-value="equitation"><span>Équitation</span></button>
@@ -75,7 +74,7 @@
 
       <section class="slide" id="q_frequence" data-key="frequence" data-type="freq">
         <h2 class="q-title" data-one="À quelle fréquence pratiquez-vous {act} ?" data-many="À quelle fréquence pratiquez-vous chacune de ces activités ?"></h2>
-        <div class="freq-list" id="freqList"></div>
+        <div class="freq-list"></div>
         <button class="btn btn-primary btn-full btn-next" onclick="nextStep()">Suivant</button>
       </section>
 
@@ -101,13 +100,10 @@
         <button class="btn btn-primary btn-full btn-next" onclick="nextStep()">Suivant</button>
       </section>
 
-      <section class="slide" id="q_preparation" data-key="preparation" data-type="single" data-auto>
-        <h2 class="q-title">Comment préparez-vous vos sorties&nbsp;?</h2>
-        <div class="opts">
-          <button class="opt" data-value="avant">Avant de partir</button>
-          <button class="opt" data-value="sur_place">Sur place</button>
-          <button class="opt" data-value="aucune">Je ne les prépare pas</button>
-        </div>
+      <section class="slide" id="q_preparation" data-key="preparation" data-type="freq">
+        <h2 class="q-title" data-one="Comment préparez-vous vos sorties ?" data-many="Comment préparez-vous vos sorties pour chacune de ces activités ?"></h2>
+        <div class="freq-list"></div>
+        <button class="btn btn-primary btn-full btn-next" onclick="nextStep()">Suivant</button>
       </section>
 
       <section class="slide" id="q_moyens" data-key="moyens" data-type="multi">
@@ -153,24 +149,23 @@
         </div>
       </section>
 
-      <section class="slide" id="q_hors_sentier" data-key="hors_sentier" data-type="single" data-auto>
-        <h2 class="q-title">Pendant vos sorties, vous arrive-t-il de quitter les sentiers balisés&nbsp;?</h2>
-        <div class="opts">
-          <button class="opt" data-value="jamais">Jamais</button>
-          <button class="opt" data-value="parfois">Parfois</button>
-          <button class="opt" data-value="souvent">Souvent</button>
+      <section class="slide" id="q_supports" data-key="supports_sur_place" data-type="multi">
+        <h2 class="q-title">Sur place, via quel(s) support(s) vous informez-vous&nbsp;?</h2>
+        <div class="opts multi">
+          <button class="opt" data-value="panneaux"><span>Les panneaux d'information à l'entrée du site</span></button>
+          <button class="opt" data-value="balisage"><span>Le balisage et les panneaux directionnels</span></button>
+          <button class="opt" data-value="accueil"><span>Un point d'accueil ou un office de tourisme</span></button>
+          <button class="opt" data-value="telephone"><span>Mon téléphone (sites, applications)</span></button>
+          <button class="opt" data-value="personnes"><span>Les personnes rencontrées sur place</span></button>
+          <button class="opt" data-value="autre"><span>Un autre support</span></button>
+          <input class="field precise" data-for="autre" type="text" maxlength="150" placeholder="Lequel&nbsp;?" hidden>
         </div>
+        <button class="btn btn-primary btn-full btn-next" onclick="nextStep()">Suivant</button>
       </section>
 
-      <section class="slide" id="q_hors_raisons" data-key="hors_sentier_raisons" data-type="multi">
-        <h2 class="q-title">Pour quelle(s) raison(s) quittez-vous les sentiers&nbsp;?</h2>
-        <div class="opts multi">
-          <button class="opt" data-value="lisibilite"><span>Le chemin ou le balisage n'est pas clair</span></button>
-          <button class="opt" data-value="decouverte"><span>Pour découvrir d'autres chemins ou paysages</span></button>
-          <button class="opt" data-value="raccourcis"><span>Pour prendre un raccourci</span></button>
-          <button class="opt" data-value="autre"><span>Pour une autre raison</span></button>
-          <input class="field precise" data-for="autre" type="text" maxlength="150" placeholder="Laquelle&nbsp;?" hidden>
-        </div>
+      <section class="slide" id="q_infos_place" data-key="infos_sur_place" data-type="text" data-optional>
+        <h2 class="q-title">Sur place, quelles informations recherchez-vous&nbsp;?</h2>
+        <textarea class="field" rows="4" maxlength="600" placeholder="Votre réponse…"></textarea>
         <button class="btn btn-primary btn-full btn-next" onclick="nextStep()">Suivant</button>
       </section>
 
@@ -184,6 +179,8 @@
           <button class="opt" data-value="reglement"><span>Je cherche les règles et les interdictions</span></button>
           <button class="opt" data-value="sensibilisation"><span>Je lis surtout les messages de sensibilisation</span></button>
           <button class="opt" data-value="ne_lis_pas" data-exclusive><span>Je ne m'arrête pas aux panneaux</span></button>
+          <button class="opt" data-value="autre"><span>Autre</span></button>
+          <input class="field precise" data-for="autre" type="text" maxlength="150" placeholder="Précisez…" hidden>
         </div>
         <button class="btn btn-primary btn-full btn-next" onclick="nextStep()">Suivant</button>
       </section>
@@ -234,6 +231,27 @@
       <section class="slide" id="q_besoins" data-key="besoins" data-type="text" data-optional>
         <h2 class="q-title">Qu'aimeriez-vous trouver à l'entrée d'un site d'activités de pleine nature&nbsp;?</h2>
         <textarea class="field" rows="5" maxlength="1000" placeholder="Idées vues ailleurs, endroit où l'information était claire, aménagement qui a amélioré votre visite…"></textarea>
+        <button class="btn btn-primary btn-full btn-next" onclick="nextStep()">Suivant</button>
+      </section>
+
+      <section class="slide" id="q_hors_sentier" data-key="hors_sentier" data-type="single" data-auto>
+        <h2 class="q-title">Pendant vos sorties, vous arrive-t-il de quitter les sentiers balisés&nbsp;?</h2>
+        <div class="opts">
+          <button class="opt" data-value="jamais">Jamais</button>
+          <button class="opt" data-value="parfois">Parfois</button>
+          <button class="opt" data-value="souvent">Souvent</button>
+        </div>
+      </section>
+
+      <section class="slide" id="q_hors_raisons" data-key="hors_sentier_raisons" data-type="multi">
+        <h2 class="q-title">Pour quelle(s) raison(s) quittez-vous les sentiers&nbsp;?</h2>
+        <div class="opts multi">
+          <button class="opt" data-value="lisibilite"><span>Le chemin ou le balisage n'est pas clair</span></button>
+          <button class="opt" data-value="decouverte"><span>Pour découvrir d'autres chemins ou paysages</span></button>
+          <button class="opt" data-value="raccourcis"><span>Pour prendre un raccourci</span></button>
+          <button class="opt" data-value="autre"><span>Pour une autre raison</span></button>
+          <input class="field precise" data-for="autre" type="text" maxlength="150" placeholder="Laquelle&nbsp;?" hidden>
+        </div>
         <button class="btn btn-primary btn-full btn-next" onclick="nextStep()">Suivant</button>
       </section>
 
@@ -296,7 +314,7 @@
       </section>
 
       <section class="slide" id="q_fin">
-        <p class="fin-text">Vos réponses nous aideront à rendre les panneaux d'information à l'entrée des sites de pleine nature plus clairs et plus utiles. Elles seront analysées par notre groupe d'atelier du Master 2 GAM et restituées au Conseil départemental de la Savoie.</p>
+        <p class="fin-text">Vos réponses nous aideront à rendre les panneaux d'information à l'entrée des sites de pleine nature plus clairs et plus utiles. Elles seront analysées par notre groupe d'atelier du Master 2 GAM et restituées au Conseil départemental de la Savoie et aux partenaires du projet.</p>
         <textarea class="field fin-avis" id="avisEnquete" rows="3" maxlength="600" placeholder="Laissez votre avis sur l'enquête ici" aria-label="Votre avis sur l'enquête (facultatif)"></textarea>
         <label class="fin-label" for="contactEmail">Pour recevoir les résultats de l'enquête, laissez votre adresse e-mail (facultatif)</label>
         <input class="field" id="contactEmail" type="email" maxlength="200" placeholder="Adresse e-mail" autocomplete="email" autocapitalize="off" spellcheck="false">
@@ -321,6 +339,6 @@
 
   <script src="js/auth.js?v=6"></script>
   <script src="js/db.js?v=7"></script>
-  <script src="js/app.js?v=22"></script>
+  <script src="js/app.js?v=23"></script>
 </body>
 </html>
