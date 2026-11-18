@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Questionnaire sur la pertinence de la signalétique</title>
-  <link rel="stylesheet" href="css/style.css?v=16">
+  <link rel="stylesheet" href="css/style.css?v=29">
 </head>
 <body class="fixed survey">
 
@@ -158,7 +158,7 @@
           <button class="opt" data-value="telephone"><span>Mon téléphone (sites, applications)</span></button>
           <button class="opt" data-value="personnes"><span>Les personnes rencontrées sur place</span></button>
           <button class="opt" data-value="autre"><span>Un autre support</span></button>
-          <input class="field precise" data-for="autre" type="text" maxlength="150" placeholder="Lequel&nbsp;?" hidden>
+          <div class="precise precise-box" data-for="autre" hidden><input class="precise-input" type="text" maxlength="150" placeholder="Lequel&nbsp;?" aria-label="Autre support" autocomplete="off"></div>
         </div>
         <button class="btn btn-primary btn-full btn-next" onclick="nextStep()">Suivant</button>
       </section>
@@ -180,7 +180,7 @@
           <button class="opt" data-value="sensibilisation"><span>Je lis surtout les messages de sensibilisation</span></button>
           <button class="opt" data-value="ne_lis_pas" data-exclusive><span>Je ne m'arrête pas aux panneaux</span></button>
           <button class="opt" data-value="autre"><span>Autre</span></button>
-          <input class="field precise" data-for="autre" type="text" maxlength="150" placeholder="Précisez…" hidden>
+          <div class="precise precise-box" data-for="autre" hidden><input class="precise-input" type="text" maxlength="150" placeholder="Précisez…" aria-label="Autre réaction" autocomplete="off"></div>
         </div>
         <button class="btn btn-primary btn-full btn-next" onclick="nextStep()">Suivant</button>
       </section>
@@ -250,7 +250,7 @@
           <button class="opt" data-value="decouverte"><span>Pour découvrir d'autres chemins ou paysages</span></button>
           <button class="opt" data-value="raccourcis"><span>Pour prendre un raccourci</span></button>
           <button class="opt" data-value="autre"><span>Pour une autre raison</span></button>
-          <input class="field precise" data-for="autre" type="text" maxlength="150" placeholder="Laquelle&nbsp;?" hidden>
+          <div class="precise precise-box" data-for="autre" hidden><input class="precise-input" type="text" maxlength="150" placeholder="Laquelle&nbsp;?" aria-label="Autre raison" autocomplete="off"></div>
         </div>
         <button class="btn btn-primary btn-full btn-next" onclick="nextStep()">Suivant</button>
       </section>
@@ -339,6 +339,15 @@
 
   <script src="js/auth.js?v=6"></script>
   <script src="js/db.js?v=7"></script>
-  <script src="js/app.js?v=23"></script>
+  <script src="js/app.js?v=25"></script>
+  <script>
+    const band = document.querySelector('.hills-survey');
+    function fitBand () {
+      const r = band.getBoundingClientRect();
+      band.setAttribute('preserveAspectRatio', r.width / r.height > 1440 / 222 ? 'none' : 'xMidYMax slice');
+    }
+    fitBand();
+    window.addEventListener('resize', fitBand);
+  </script>
 </body>
 </html>

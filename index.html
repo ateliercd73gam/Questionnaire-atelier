@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Questionnaire sur la pertinence de la signalétique</title>
-  <link rel="stylesheet" href="css/style.css?v=16">
+  <link rel="stylesheet" href="css/style.css?v=29">
 </head>
 <body class="fixed">
 
@@ -28,6 +28,8 @@
 
       <h1>Merci de faire un bout de chemin avec nous&nbsp;!</h1>
       <p class="intro"><span>Qu'attendez-vous en arrivant sur un site d'activités de pleine nature&nbsp;?</span> <span>Dites-nous ce qui vous aide et ce qui vous manque&nbsp;: on vous écoute.</span></p>
+
+      <p class="countdown" id="countdown">Le questionnaire est disponible jusqu'au 31&nbsp;décembre&nbsp;2026<span class="cd-left"></span></p>
 
       <div class="signpost">
         <span class="pole" aria-hidden="true"></span>
@@ -94,6 +96,11 @@ mountResultsAccess({ tree: true });
     legalModal.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeLegal));
     legalModal.addEventListener('click', e => { if (e.target === legalModal) closeLegal(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLegal(); });
+
+    const countdown = document.getElementById('countdown');
+    const daysLeft = Math.ceil((new Date('2027-01-01T00:00:00+01:00') - Date.now()) / 86400000);
+    if (daysLeft <= 0) countdown.textContent = 'Le questionnaire était disponible jusqu\'au 31\u00a0décembre\u00a02026';
+    else countdown.querySelector('.cd-left').textContent = daysLeft === 1 ? ' (dernier jour)' : ' (encore ' + daysLeft + '\u00a0jours)';
 
     const pole = document.querySelector('.pole');
     const hills = document.querySelector('.hills');

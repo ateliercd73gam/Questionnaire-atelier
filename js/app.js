@@ -695,13 +695,40 @@ function updateSuggest (input) {
   const parts = input.value.split(',');
   const token = fold(parts.pop().trim());
   const used  = parts.map(p => fold(p.trim()));
-  const hits  = token ? box.dataset.suggest.split('|').filter(name => {
+  const hits  = token && box.dataset.suggest ? box.dataset.suggest.split('|').filter(name => {
     const f = fold(name);
     return f !== token && !used.includes(f) && f.split(/[\s-]+/).concat(f).some(w => w.startsWith(token));
   }).slice(0, 4) : [];
   const sug = box.querySelector('.suggest');
-  sug.innerHTML = hits.map(name => `<button type="button" class="sug">${esc(name)}</button>`).join('');
-  sug.hidden = !hits.length;
+  if (!sug) return;
+  sug.innerHTML = hits.map(name => `<button type="button" class="sug" role="option" tabindex="-1">${esc(name)}</button>`).join('');
+  showSuggest(box, hits.length > 0);
+}
+
+function showSuggest (box, open) {
+  const sug = box.querySelector('.suggest');
+  if (!sug) return;
+  sug.hidden = !open;
+  box.classList.toggle('open', open);
+  box.querySelector('.precise-input').setAttribute('aria-expanded', String(open));
+}
+
+function onSuggestKey (e) {
+  const box   = e.target.closest('.precise-box');
+  const sug   = box.querySelector('.suggest');
+  const items = sug && !sug.hidden ? [...sug.querySelectorAll('.sug')] : [];
+  const at    = items.findIndex(it => it.classList.contains('on'));
+  if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && items.length) {
+    e.preventDefault();
+    const next = (at + (e.key === 'ArrowDown' ? 1 : -1) + items.length + 1) % (items.length + 1);
+    items.forEach((it, i) => it.classList.toggle('on', i === next));
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (at >= 0) pickSuggest(items[at]);
+    else e.target.blur();
+  } else if (e.key === 'Escape') {
+    showSuggest(box, false);
+  }
 }
 
 function pickSuggest (btn) {
@@ -723,7 +750,7 @@ function onFieldInput (e) {
 }
 
 function onFieldKey (e) {
-  if (e.key === 'Enter' && e.target.classList.contains('precise-input')) { e.preventDefault(); e.target.blur(); return; }
+  if (e.target.classList.contains('precise-input')) { onSuggestKey(e); return; }
   if (e.key !== 'Enter' || e.target.tagName !== 'INPUT' || !e.target.classList.contains('field')) return;
   e.preventDefault();
   if (e.target.id === 'contactEmail') submitSurvey();
@@ -1030,9 +1057,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   document.addEventListener('focusout', e => {
     if (!e.target.classList.contains('precise-input')) return;
-    const sug = e.target.closest('.precise-box').querySelector('.suggest');
-    setTimeout(() => { if (document.activeElement !== e.target) sug.hidden = true; }, 200);
+    const box = e.target.closest('.precise-box');
+    setTimeout(() => { if (document.activeElement !== e.target) showSuggest(box, false); }, 200);
   });
+  document.addEventListener('mousedown', e => { if (e.target.closest('.sug')) e.preventDefault(); });
   document.addEventListener('keydown', onFieldKey);
   const wrapper = $('signWrapper');
   if (wrapper) {
