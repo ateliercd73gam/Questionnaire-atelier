@@ -19,7 +19,7 @@ const SECTIONS = [
   { title: 'Pratiques', panels: [
     { title: 'Pratique une activité de pleine nature', map: XL.pratique, ordered: true, values: r => listOf(r.pratique) },
     { title: 'Activités pratiquées', map: XL.activites, values: r => listOf(r.activites).map(actKey), note: 'Plusieurs réponses possibles' },
-    { title: 'Niveau (par activité)', map: XL.niveau, ordered: true, values: r => listOf(r.activites).map(a => (r.niveaux || {})[a]).filter(Boolean), per: 'activité' },
+    { title: 'Niveau par activité', levels: true },
     { title: 'Fréquence (par activité)', map: XL.frequence, ordered: true, values: r => listOf(r.activites).map(a => (r.frequence || {})[a]).filter(Boolean), per: 'activité' },
     { title: 'Ce qui est recherché', map: XL.motif, values: r => listOf(r.motif_pratique), note: 'Plusieurs réponses possibles' },
     { title: 'Saison(s) de pratique', map: XL.saisons, ordered: true, values: r => listOf(r.saisons), note: 'Plusieurs réponses possibles' }
@@ -95,6 +95,38 @@ function barsPanel (p, data) {
   </div>`;
 }
 
+const LEVEL_SHADES = { debutant: '#BCD0C4', intermediaire: '#6F9180', avance: '#244534' };
+
+function levelsPanel (p, data) {
+  const keys = Object.keys(XL.niveau);
+  const acts = new Map();
+  data.forEach(r => listOf(r.activites).forEach(a => {
+    const lvl = (r.niveaux || {})[a];
+    if (!keys.includes(lvl)) return;
+    const k = actKey(a);
+    if (!acts.has(k)) acts.set(k, Object.fromEntries(keys.map(l => [l, 0])));
+    acts.get(k)[lvl]++;
+  }));
+  const rows = [...acts.entries()]
+    .map(([k, c]) => ({ k, c, n: keys.reduce((t, l) => t + c[l], 0) }))
+    .sort((a, b) => b.n - a.n);
+  const people = data.filter(r => listOf(r.activites).some(a => keys.includes((r.niveaux || {})[a]))).length;
+
+  const legend = keys.map(l => `<span><i style="background:${LEVEL_SHADES[l]}"></i>${XL.niveau[l]}</span>`).join('');
+  const body = !rows.length ? '<p class="empty">Aucune donnée pour le moment.</p>' : rows.map(({ k, c, n }) => `
+    <div class="lvl-row">
+      <div class="bar-lbl">${escapeHtml(k === 'autre' ? 'Autre' : xlLabel(XL.activites, k))}</div>
+      <div class="lvl-track">${keys.map(l => c[l] ? `<span class="${l === 'avance' ? 'dark' : ''}" style="flex:${c[l]};background:${LEVEL_SHADES[l]}" title="${XL.niveau[l]} : ${c[l]} (${pct(c[l], n)} %)">${pct(c[l], n) >= 14 ? pct(c[l], n) + ' %' : ''}</span>` : '').join('')}</div>
+      <div class="bar-val"><b>${n}</b> <span>pers.</span></div>
+    </div>`).join('');
+
+  return `<div class="panel">
+    <div class="panel-head"><span class="panel-title">${p.title}</span><span class="panel-sub">${people} répondant${people > 1 ? 's' : ''}</span></div>
+    ${rows.length ? `<div class="lvl-legend">${legend}</div>` : ''}
+    ${body}
+  </div>`;
+}
+
 function textPanel (p, data) {
   const answers = data.map(r => (p.text(r) || '').trim()).filter(Boolean).reverse();
   return `<div class="panel panel-text">
@@ -131,85 +163,211 @@ function renderResults (data) {
   const body = $('resultsBody');
   body.innerHTML = SECTIONS.map(sec => {
     let inner;
-    if (sec.heatmaps) inner = '<div class="heatmaps-grid" id="heatmapsGrid"></div>';
+    if (sec.heatmaps) inner = '<div id="hmapTools"></div><div class="heatmaps-grid" id="heatmapsGrid"></div>';
     else if (sec.accueil) inner = accueilPanel(data);
-    else inner = `<div class="panels">${sec.panels.map(p => (p.text ? textPanel(p, data) : barsPanel(p, data))).join('')}</div>`;
+    else inner = `<div class="panels">${sec.panels.map(p => (p.text ? textPanel(p, data) : p.levels ? levelsPanel(p, data) : barsPanel(p, data))).join('')}</div>`;
     return `<h2 class="results-h">${sec.title}</h2>${inner}`;
   }).join('');
   renderHeatmaps(data);
+}
+
+const HMAP_KEY = 'atelier_hmap_view';
+const HMAP_MODES  = [['heat', 'Chaleur'], ['dots', 'Points'], ['photo', 'Photo']];
+const HMAP_ORDERS = [['all', 'Tous les clics'], ['first', '1er clic']];
+const HMAP_GRID = { w: 240, h: 180 };
+const HMAP_SIGMA = 0.045;
+const HMAP_RAMP = [
+  [0.00, 72, 20, 140, 0],
+  [0.06, 72, 20, 140, 0],
+  [0.14, 96, 32, 180, 0.5],
+  [0.32, 200, 30, 90, 0.78],
+  [0.52, 226, 35, 26, 0.86],
+  [0.74, 245, 140, 30, 0.9],
+  [0.90, 247, 197, 30, 0.94],
+  [1.00, 255, 246, 214, 0.96]
+];
+const HMAP_LUT = (() => {
+  const lut = new Uint8ClampedArray(256 * 4);
+  for (let i = 0; i < 256; i++) {
+    const t = i / 255;
+    let k = 1;
+    while (k < HMAP_RAMP.length - 1 && HMAP_RAMP[k][0] < t) k++;
+    const a = HMAP_RAMP[k - 1], b = HMAP_RAMP[k];
+    const f = (t - a[0]) / (b[0] - a[0]);
+    for (let c = 0; c < 4; c++) lut[i * 4 + c] = (a[c + 1] + (b[c + 1] - a[c + 1]) * f) * (c === 3 ? 255 : 1);
+  }
+  return lut;
+})();
+
+const hmapView = (() => {
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(HMAP_KEY) || '{}'); } catch (e) {}
+  return {
+    mode:  HMAP_MODES.some(([k]) => k === saved.mode) ? saved.mode : 'heat',
+    order: HMAP_ORDERS.some(([k]) => k === saved.order) ? saved.order : 'all'
+  };
+})();
+
+function setHmapView (key, value) {
+  hmapView[key] = value;
+  try { localStorage.setItem(HMAP_KEY, JSON.stringify(hmapView)); } catch (e) {}
+  renderHeatmapsAgain();
+}
+
+function hmapToolbar () {
+  const seg = (key, opts) => `<div class="hmap-seg" role="group">${opts.map(([k, l]) =>
+    `<button type="button" class="${hmapView[key] === k ? 'on' : ''}" aria-pressed="${hmapView[key] === k}" onclick="setHmapView('${key}','${k}')">${l}</button>`).join('')}</div>`;
+  return `<div class="hmap-tools">${seg('mode', HMAP_MODES)}${seg('order', HMAP_ORDERS)}</div>`;
 }
 
 function renderHeatmaps (data) {
   const grid = $('heatmapsGrid');
   if (!grid) return;
   const token = ++renderToken;
+  const tools = $('hmapTools');
+  if (tools) tools.innerHTML = hmapToolbar();
 
   CONFIG.SIGNS.forEach(sign => {
-    const allClicks = [];
+    const people = [];
     let old = 0;
     data.forEach(r => {
       const clicks = (r.sign_interactions || {})[sign.id];
       if (!Array.isArray(clicks)) return;
-      if (versionOf(r, sign) === sign.imageVersion && (r.v || 0) >= (sign.since || 0)) allClicks.push(...clicks);
-      else old++;
+      if (versionOf(r, sign) !== sign.imageVersion || (r.v || 0) < (sign.since || 0)) { old++; return; }
+      const kept = hmapView.order === 'first'
+        ? clicks.filter((c, i) => (c.order || i + 1) === 1)
+        : clicks;
+      if (kept.length) people.push(kept);
     });
+    const nClicks = people.reduce((t, p) => t + p.length, 0);
 
     const card = document.createElement('div');
     card.className = 'hmap-card';
     card.innerHTML = `
       <div class="hmap-header">
         <span class="hmap-title">${signTitle(sign)}</span>
-        <span class="hmap-badge">${allClicks.length} clic${allClicks.length !== 1 ? 's' : ''}</span>
+        <span class="hmap-badge">${people.length} participant${people.length > 1 ? 's' : ''} · ${nClicks} clic${nClicks > 1 ? 's' : ''}</span>
       </div>
       <p class="hmap-q">${escapeHtml(sign.question)}</p>
-      <div class="hmap-body" id="hmap_${sign.id}"></div>
+      <div class="hmap-body mode-${hmapView.mode}" id="hmap_${sign.id}"></div>
       ${old ? `<p class="hmap-old">${old} réponse${old > 1 ? 's' : ''} sur une image ou une question précédente non affichée${old > 1 ? 's' : ''}</p>` : ''}
     `;
     grid.appendChild(card);
 
     requestAnimationFrame(() => {
-      setTimeout(() => { if (token === renderToken) buildHeatmap(sign, allClicks); }, 80);
+      setTimeout(() => { if (token === renderToken) buildHeatmap(sign, people); }, 40);
     });
   });
 }
 
-function buildHeatmap (sign, allClicks) {
+function hmapDensity (clicks) {
+  const { w, h } = HMAP_GRID;
+  const grid = new Float32Array(w * h);
+  const s = HMAP_SIGMA * w;
+  const reach = Math.ceil(s * 3);
+  const inv = 1 / (2 * s * s);
+  clicks.forEach(c => {
+    const cx = c.x / 100 * w, cy = c.y / 100 * h;
+    const x0 = Math.max(0, Math.floor(cx - reach)), x1 = Math.min(w - 1, Math.ceil(cx + reach));
+    const y0 = Math.max(0, Math.floor(cy - reach)), y1 = Math.min(h - 1, Math.ceil(cy + reach));
+    for (let y = y0; y <= y1; y++) {
+      const dy = y + 0.5 - cy;
+      for (let x = x0; x <= x1; x++) {
+        const dx = x + 0.5 - cx;
+        grid[y * w + x] += Math.exp(-(dx * dx + dy * dy) * inv);
+      }
+    }
+  });
+  let max = 0;
+  for (let i = 0; i < grid.length; i++) if (grid[i] > max) max = grid[i];
+  return { grid, max };
+}
+
+function hmapPeaks ({ grid, max }, people) {
+  const { w, h } = HMAP_GRID;
+  const s = HMAP_SIGMA * w;
+  const cand = [];
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const v = grid[y * w + x];
+      if (v < max * 0.3) continue;
+      let top = true;
+      for (let j = -1; j <= 1 && top; j++) for (let i = -1; i <= 1; i++) {
+        if ((i || j) && grid[(y + j) * w + x + i] > v) { top = false; break; }
+      }
+      if (top) cand.push({ x, y, v });
+    }
+  }
+  cand.sort((a, b) => b.v - a.v);
+  const kept = [];
+  cand.forEach(c => {
+    if (kept.length < 5 && kept.every(k => Math.hypot(k.x - c.x, k.y - c.y) > s * 2.6)) kept.push(c);
+  });
+  const reach = s * 1.6;
+  return kept.map(p => {
+    const n = people.filter(clicks => clicks.some(c =>
+      Math.hypot(c.x / 100 * w - (p.x + 0.5), c.y / 100 * h - (p.y + 0.5)) <= reach)).length;
+    return { x: (p.x + 0.5) / w * 100, y: (p.y + 0.5) / h * 100, n, share: pct(n, people.length) };
+  });
+}
+
+function buildHeatmap (sign, people) {
   const container = document.getElementById(`hmap_${sign.id}`);
   if (!container) return;
-
   container.innerHTML = signMarkup(sign);
 
-  const w = container.offsetWidth;
-  const h = Math.round(w * 0.75);
-  container.style.height = h + 'px';
+  const clicks = people.flat();
+  if (!clicks.length || hmapView.mode === 'photo') return;
 
-  if (allClicks.length === 0 || typeof h337 === 'undefined') return;
+  const canvas = document.createElement('canvas');
+  canvas.className = 'hmap-canvas';
+  canvas.width = 1200;
+  canvas.height = 900;
+  const ctx = canvas.getContext('2d');
 
-  const hm = h337.create({
-    container:  container,
-    radius:     Math.max(28, Math.round(w * 0.065)),
-    maxOpacity: 0.72,
-    minOpacity: 0,
-    blur:       0.80
-  });
-
-  hm.setData({
-    max: Math.max(2, Math.ceil(allClicks.length * 0.35)),
-    data: allClicks.map(c => ({
-      x: Math.round(c.x / 100 * w),
-      y: Math.round(c.y / 100 * h),
-      value: 1
-    }))
-  });
-
-  const canvas = container.querySelector('canvas');
-  if (canvas) {
-    canvas.style.position = 'absolute';
-    canvas.style.top  = '0';
-    canvas.style.left = '0';
-    canvas.style.pointerEvents = 'none';
-    canvas.style.zIndex = '10';
+  if (hmapView.mode === 'dots') {
+    const r = 11;
+    clicks.forEach(c => {
+      ctx.beginPath();
+      ctx.arc(c.x / 100 * canvas.width, c.y / 100 * canvas.height, r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(247, 197, 30, 0.9)';
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#17211C';
+      ctx.stroke();
+    });
+    container.appendChild(canvas);
+    return;
   }
+
+  const dens = hmapDensity(clicks);
+  const { w, h } = HMAP_GRID;
+  const small = document.createElement('canvas');
+  small.width = w;
+  small.height = h;
+  const sctx = small.getContext('2d');
+  const img = sctx.createImageData(w, h);
+  for (let i = 0; i < dens.grid.length; i++) {
+    const k = Math.min(255, Math.round(dens.grid[i] / dens.max * 255)) * 4;
+    img.data[i * 4]     = HMAP_LUT[k];
+    img.data[i * 4 + 1] = HMAP_LUT[k + 1];
+    img.data[i * 4 + 2] = HMAP_LUT[k + 2];
+    img.data[i * 4 + 3] = HMAP_LUT[k + 3];
+  }
+  sctx.putImageData(img, 0, 0);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(small, 0, 0, canvas.width, canvas.height);
+  container.appendChild(canvas);
+
+  const pins = document.createElement('div');
+  pins.className = 'hmap-pins';
+  pins.innerHTML = hmapPeaks(dens, people).map((p, i) => `
+    <div class="hmap-peak${p.x > 78 ? ' left' : ''}" style="left:${p.x}%;top:${p.y}%"
+      title="${p.n} participant${p.n > 1 ? 's' : ''} sur ${people.length} ont cliqué dans cette zone">
+      <b class="hmap-pin">${i + 1}</b><span>${p.share} %</span>
+    </div>`).join('');
+  container.appendChild(pins);
 }
 
 const STATUS_LABELS = { connecting: 'connexion…', connected: 'connecté', disconnected: 'déconnecté' };
