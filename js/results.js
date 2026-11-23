@@ -19,8 +19,8 @@ const SECTIONS = [
   { title: 'Pratiques', panels: [
     { title: 'Pratique une activité de pleine nature', map: XL.pratique, ordered: true, values: r => listOf(r.pratique) },
     { title: 'Activités pratiquées', map: XL.activites, values: r => listOf(r.activites).map(actKey), note: 'Plusieurs réponses possibles' },
-    { title: 'Niveau par activité', levels: true },
-    { title: 'Fréquence (par activité)', map: XL.frequence, ordered: true, values: r => listOf(r.activites).map(a => (r.frequence || {})[a]).filter(Boolean), per: 'activité' },
+    { title: 'Niveau par activité', stack: 'niveau' },
+    { title: 'Fréquence', split: 'frequence', map: XL.frequence, ordered: true, order: FREQS.map(([k]) => k), values: r => listOf(r.activites).map(a => (r.frequence || {})[a]).filter(Boolean), per: 'activité' },
     { title: 'Ce qui est recherché', map: XL.motif, values: r => listOf(r.motif_pratique), note: 'Plusieurs réponses possibles' },
     { title: 'Saison(s) de pratique', map: XL.saisons, ordered: true, values: r => listOf(r.saisons), note: 'Plusieurs réponses possibles' }
   ] },
@@ -73,7 +73,7 @@ function renderStats (data) {
 function barsPanel (p, data) {
   const asked = data.filter(r => p.values(r).length);
   const counts = new Map();
-  if (p.ordered && p.map) Object.keys(p.map).forEach(k => counts.set(k, 0));
+  if (p.ordered && p.map) (p.order || Object.keys(p.map)).forEach(k => counts.set(k, 0));
   let units = 0;
   asked.forEach(r => p.values(r).forEach(v => { counts.set(v, (counts.get(v) || 0) + 1); units++; }));
   const base = p.per ? units : asked.length;
@@ -91,37 +91,75 @@ function barsPanel (p, data) {
   const sub = p.per ? `${base} ${p.per}${base > 1 ? 's' : ''} citée${base > 1 ? 's' : ''}` : `${asked.length} répondant${asked.length > 1 ? 's' : ''}`;
   return `<div class="panel">
     <div class="panel-head"><span class="panel-title">${p.title}</span><span class="panel-sub">${sub}${p.note ? ' · ' + p.note : ''}</span></div>
+    ${switchFor(p)}
     ${body}
   </div>`;
 }
 
-const LEVEL_SHADES = { debutant: '#BCD0C4', intermediaire: '#6F9180', avance: '#244534' };
+const STACKS = {
+  niveau:    { keys: LEVELS.map(([k]) => k), labels: XL.niveau,    shades: ['#BCD0C4', '#6F9180', '#244534'],            get: r => r.niveaux },
+  frequence: { keys: FREQS.map(([k]) => k),  labels: XL.frequence, shades: ['#244534', '#4F7563', '#8FAE9E', '#C9D9CF'], get: r => r.frequence }
+};
+const DARK_SHADES = ['#244534', '#4F7563', '#6F9180'];
+const VIEWS_KEY = 'atelier_panel_views';
+const panelViews = (() => { try { return JSON.parse(localStorage.getItem(VIEWS_KEY) || '{}'); } catch (e) { return {}; } })();
 
-function levelsPanel (p, data) {
-  const keys = Object.keys(XL.niveau);
+function anyPanel (p, data) {
+  if (p.text) return textPanel(p, data);
+  if (p.stack) return stackPanel(p, data);
+  if (p.split) {
+    const html = panelViews[p.split] === 'act'
+      ? stackPanel({ ...p, title: p.title + ' par activité', stack: p.split }, data)
+      : barsPanel(p, data);
+    return html.replace('<div class="panel">', `<div class="panel" id="panel_${p.split}">`);
+  }
+  return barsPanel(p, data);
+}
+
+function switchFor (p) {
+  if (!p.split) return '';
+  const view = panelViews[p.split] === 'act' ? 'act' : 'global';
+  return `<div class="panel-switch" role="group">${[['global', 'Global'], ['act', 'Par activité']].map(([k, l]) =>
+    `<button type="button" class="${view === k ? 'on' : ''}" aria-pressed="${view === k}" onclick="setPanelView('${p.split}','${k}')">${l}</button>`).join('')}</div>`;
+}
+
+function setPanelView (split, view) {
+  panelViews[split] = view;
+  try { localStorage.setItem(VIEWS_KEY, JSON.stringify(panelViews)); } catch (e) {}
+  const el = $('panel_' + split);
+  const p = SECTIONS.flatMap(sec => sec.panels || []).find(x => x.split === split);
+  if (el && p) el.outerHTML = anyPanel(p, lastData);
+}
+
+function stackPanel (p, data) {
+  const st = STACKS[p.stack];
+  const keys = st.keys;
+  const valueOf = (r, a) => { const m = st.get(r); return m && typeof m === 'object' ? m[a] : undefined; };
   const acts = new Map();
   data.forEach(r => listOf(r.activites).forEach(a => {
-    const lvl = (r.niveaux || {})[a];
-    if (!keys.includes(lvl)) return;
+    const v = valueOf(r, a);
+    if (!keys.includes(v)) return;
     const k = actKey(a);
     if (!acts.has(k)) acts.set(k, Object.fromEntries(keys.map(l => [l, 0])));
-    acts.get(k)[lvl]++;
+    acts.get(k)[v]++;
   }));
   const rows = [...acts.entries()]
     .map(([k, c]) => ({ k, c, n: keys.reduce((t, l) => t + c[l], 0) }))
     .sort((a, b) => b.n - a.n);
-  const people = data.filter(r => listOf(r.activites).some(a => keys.includes((r.niveaux || {})[a]))).length;
+  const people = data.filter(r => listOf(r.activites).some(a => keys.includes(valueOf(r, a)))).length;
+  const shade = l => st.shades[keys.indexOf(l)];
 
-  const legend = keys.map(l => `<span><i style="background:${LEVEL_SHADES[l]}"></i>${XL.niveau[l]}</span>`).join('');
+  const legend = keys.map(l => `<span><i style="background:${shade(l)}"></i>${st.labels[l]}</span>`).join('');
   const body = !rows.length ? '<p class="empty">Aucune donnée pour le moment.</p>' : rows.map(({ k, c, n }) => `
     <div class="lvl-row">
       <div class="bar-lbl">${escapeHtml(k === 'autre' ? 'Autre' : xlLabel(XL.activites, k))}</div>
-      <div class="lvl-track">${keys.map(l => c[l] ? `<span class="${l === 'avance' ? 'dark' : ''}" style="flex:${c[l]};background:${LEVEL_SHADES[l]}" title="${XL.niveau[l]} : ${c[l]} (${pct(c[l], n)} %)">${pct(c[l], n) >= 14 ? pct(c[l], n) + ' %' : ''}</span>` : '').join('')}</div>
+      <div class="lvl-track">${keys.map(l => c[l] ? `<span class="${DARK_SHADES.includes(shade(l)) ? 'dark' : ''}" style="flex:${c[l]};background:${shade(l)}" title="${st.labels[l]} : ${c[l]} (${pct(c[l], n)} %)">${pct(c[l], n) >= 14 ? pct(c[l], n) + ' %' : ''}</span>` : '').join('')}</div>
       <div class="bar-val"><b>${n}</b> <span>pers.</span></div>
     </div>`).join('');
 
   return `<div class="panel">
     <div class="panel-head"><span class="panel-title">${p.title}</span><span class="panel-sub">${people} répondant${people > 1 ? 's' : ''}</span></div>
+    ${switchFor(p)}
     ${rows.length ? `<div class="lvl-legend">${legend}</div>` : ''}
     ${body}
   </div>`;
@@ -165,7 +203,7 @@ function renderResults (data) {
     let inner;
     if (sec.heatmaps) inner = '<div id="hmapTools"></div><div class="heatmaps-grid" id="heatmapsGrid"></div>';
     else if (sec.accueil) inner = accueilPanel(data);
-    else inner = `<div class="panels">${sec.panels.map(p => (p.text ? textPanel(p, data) : p.levels ? levelsPanel(p, data) : barsPanel(p, data))).join('')}</div>`;
+    else inner = `<div class="panels">${sec.panels.map(p => anyPanel(p, data)).join('')}</div>`;
     return `<h2 class="results-h">${sec.title}</h2>${inner}`;
   }).join('');
   renderHeatmaps(data);
