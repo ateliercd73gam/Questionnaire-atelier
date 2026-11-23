@@ -632,10 +632,19 @@ const PLACES = [
   ...'Belgique|Suisse|Luxembourg|Allemagne|Italie|Espagne|Portugal|Royaume-Uni|Irlande|Pays-Bas|Autriche|Danemark|Suède|Norvège|Finlande|Pologne|République tchèque|États-Unis|Canada|Australie|Japon|Chine|Brésil|Maroc|Algérie|Tunisie'
     .split('|').map(name => ({ name, label: name, pays: true }))
 ];
+const OTHER_PLACE = { name: 'Autre pays', label: 'Autre pays', other: true };
+const flatPlace = str => fold(str).replace(/[-'’–]/g, ' ').replace(/\s+/g, ' ').trim();
+const isPlace = text => text === OTHER_PLACE.label || PLACES.some(p => p.label === text);
+
+function resolvePlace (text) {
+  const q = flatPlace(text);
+  if (!q) return null;
+  return [...PLACES, OTHER_PLACE].find(p => (p.code && p.code.toLowerCase() === q) || flatPlace(p.name) === q || flatPlace(p.label) === q) || null;
+}
 let placeActive = -1;
 
 function placeHits (text) {
-  const flat = str => fold(str).replace(/[-'’–]/g, ' ').replace(/\s+/g, ' ').trim();
+  const flat = flatPlace;
   const q = flat(text);
   if (!q) return [];
   const rank = p => {
@@ -644,8 +653,12 @@ function placeHits (text) {
     if (name.startsWith(q) || flat(p.label).startsWith(q)) return 1;
     return name.split(' ').some(w => w.startsWith(q)) ? 2 : -1;
   };
-  return PLACES.map(p => [rank(p), p]).filter(([r, p]) => r >= 0 && p.label !== text.trim())
+  const hits = PLACES.map(p => [rank(p), p]).filter(([r, p]) => r >= 0 && p.label !== text.trim())
     .sort((a, b) => a[0] - b[0]).slice(0, 6).map(([, p]) => p);
+  if (!hits.length || 'autre pays'.startsWith(q) || q.startsWith('autre')) {
+    if (text.trim() !== OTHER_PLACE.label) hits.push(OTHER_PLACE);
+  }
+  return hits.slice(0, 6);
 }
 
 function renderPlaces () {
@@ -653,7 +666,7 @@ function renderPlaces () {
   const list  = $('placeList');
   const hits  = placeHits(input.value);
   placeActive = -1;
-  list.innerHTML = hits.map(p => `<li class="ac-item" role="option" data-label="${esc(p.label)}">${p.code ? `<b>${p.code}</b>` : ''}<span>${esc(p.name)}</span>${p.pays ? '<em>pays</em>' : ''}</li>`).join('');
+  list.innerHTML = hits.map(p => `<li class="ac-item" role="option" data-label="${esc(p.label)}">${p.code ? `<b>${p.code}</b>` : ''}<span>${esc(p.name)}</span>${p.pays ? '<em>pays</em>' : ''}${p.other ? '<em>hors liste</em>' : ''}</li>`).join('');
   list.hidden = !hits.length;
   input.setAttribute('aria-expanded', String(!list.hidden));
 }
@@ -671,8 +684,24 @@ function pickPlace (label) {
   closePlaces();
 }
 
+function settlePlace () {
+  const input = $('placeInput');
+  if (!input || isPlace(input.value)) return;
+  const hit = resolvePlace(input.value);
+  if (hit) pickPlace(hit.label);
+  else if (input.value.trim()) showErr(input.closest('.slide'));
+}
+
 function onPlaceKey (e) {
   const items = [...$('placeList').querySelectorAll('.ac-item')];
+  if (e.key === 'Enter' && placeActive < 0 && !isPlace(e.target.value)) {
+    const hit = resolvePlace(e.target.value) || (items.length === 1 && !$('placeList').hidden ? { label: items[0].dataset.label } : null);
+    if (hit) { pickPlace(hit.label); return; }
+    e.preventDefault();
+    e.stopPropagation();
+    showErr(e.target.closest('.slide'));
+    return;
+  }
   if ($('placeList').hidden || !items.length) return;
   if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
     e.preventDefault();
@@ -763,7 +792,7 @@ function isAnswered (slide) {
     case 'multi':  return v.length > 0 && (!('levels' in slide.dataset) || v.every(a => !needsLevel(a) || state.responses.niveaux[a]));
     case 'freq':   return state.responses.activites.every(a => v[a]);
     case 'rating': return CONFIG.ACCUEIL.every(a => v[a.id]);
-    case 'text':   return 'optional' in slide.dataset || v.trim() !== '';
+    case 'text':   return 'list' in slide.dataset ? isPlace(v) : 'optional' in slide.dataset || v.trim() !== '';
     default:       return v != null;
   }
 }
@@ -1051,7 +1080,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (place) {
     place.addEventListener('input', renderPlaces);
     place.addEventListener('keydown', onPlaceKey);
-    place.addEventListener('blur', () => setTimeout(closePlaces, 150));
+    place.addEventListener('blur', () => setTimeout(() => { closePlaces(); settlePlace(); }, 150));
     $('placeList').addEventListener('mousedown', e => e.preventDefault());
     $('placeList').addEventListener('click', e => { const item = e.target.closest('.ac-item'); if (item) pickPlace(item.dataset.label); });
   }

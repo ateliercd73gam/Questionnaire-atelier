@@ -293,13 +293,14 @@
         </div>
       </section>
 
-      <section class="slide" id="q_departement" data-key="departement" data-type="text">
+      <section class="slide" id="q_departement" data-key="departement" data-type="text" data-list>
         <h2 class="q-title">Quel est votre département de résidence&nbsp;?</h2>
         <div class="ac">
           <input class="field" id="placeInput" type="text" maxlength="80" placeholder="Ex. Savoie, 73… ou votre pays" autocomplete="off"
                  role="combobox" aria-autocomplete="list" aria-controls="placeList" aria-expanded="false">
           <ul class="ac-list" id="placeList" role="listbox" hidden></ul>
         </div>
+        <p class="err">Choisissez votre département ou votre pays dans la liste.</p>
         <button class="btn btn-primary btn-full btn-next" onclick="nextStep()">Suivant</button>
       </section>
 
@@ -339,7 +340,7 @@
 
   <script src="js/auth.js?v=6"></script>
   <script src="js/db.js?v=7"></script>
-  <script src="js/app.js?v=25"></script>
+  <script src="js/app.js?v=26"></script>
   <script>
     const band = document.querySelector('.hills-survey');
     function fitBand () {
